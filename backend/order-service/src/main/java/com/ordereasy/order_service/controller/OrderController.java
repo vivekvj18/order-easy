@@ -81,9 +81,11 @@ public class OrderController {
     @GetMapping
     public PaginatedOrderResponse getOrders(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction
     ) {
-        return orderService.getOrders(page, size);
+        return orderService.getOrders(page, size, sortBy, direction);
     }
 
 

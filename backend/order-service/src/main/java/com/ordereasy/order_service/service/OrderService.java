@@ -45,9 +45,13 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public PaginatedOrderResponse getOrders(int page, int size) {
+    public PaginatedOrderResponse getOrders(int page, int size, String sortBy, String direction) {
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending() );
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Order> orderPage = orderRepository.findAll(pageable);
 
@@ -59,10 +63,10 @@ public class OrderService {
         );
 
         return new PaginatedOrderResponse(
-                responsePage.getContent(),       // orders list
-                responsePage.getNumber(),        // current page
-                responsePage.getTotalPages(),    // total pages
-                responsePage.getTotalElements()  // total items
+                responsePage.getContent(),
+                responsePage.getNumber(),
+                responsePage.getTotalPages(),
+                responsePage.getTotalElements()
         );
     }
 }
