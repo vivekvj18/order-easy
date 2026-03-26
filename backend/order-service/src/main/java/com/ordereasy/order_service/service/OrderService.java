@@ -45,7 +45,14 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
-    public PaginatedOrderResponse getOrders(int page, int size, String sortBy, String direction) {
+    public PaginatedOrderResponse getOrders(
+            int page,
+            int size,
+            String sortBy,
+            String direction,
+            OrderStatus status,
+            Long userId
+    ) {
 
         Sort sort = direction.equalsIgnoreCase("asc")
                 ? Sort.by(sortBy).ascending()
@@ -53,7 +60,17 @@ public class OrderService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        Page<Order> orderPage = orderRepository.findAll(pageable);
+        Page<Order> orderPage;
+
+        if (status != null && userId != null) {
+            orderPage = orderRepository.findByStatusAndUserId(status, userId, pageable);
+        } else if (status != null) {
+            orderPage = orderRepository.findByStatus(status, pageable);
+        } else if (userId != null) {
+            orderPage = orderRepository.findByUserId(userId, pageable);
+        } else {
+            orderPage = orderRepository.findAll(pageable);
+        }
 
         Page<OrderResponse> responsePage = orderPage.map(order ->
                 new OrderResponse(

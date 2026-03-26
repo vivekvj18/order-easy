@@ -83,9 +83,11 @@ public class OrderController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) Long userId
     ) {
-        return orderService.getOrders(page, size, sortBy, direction);
+        return orderService.getOrders(page, size, sortBy, direction, status, userId);
     }
 
 
