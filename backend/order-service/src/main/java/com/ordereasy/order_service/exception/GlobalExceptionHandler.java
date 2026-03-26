@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice  // ✅ was @ControllerAdvice — this was the root cause
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // ✅ Handles @Valid failures (e.g. missing/invalid fields)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex) {
 
@@ -31,7 +31,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(response);
     }
 
-    // Catch-all for unexpected errors (prevents raw 500s)
+    // ✅ Handles order not found → clean 404
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleOrderNotFoundException(
+            OrderNotFoundException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", 404);
+        response.put("error", "Order Not Found");
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now().toString());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    // ✅ Catch-all for unexpected errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
 
