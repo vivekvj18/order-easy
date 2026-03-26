@@ -1,5 +1,6 @@
 package com.ordereasy.order_service.controller;
 
+import com.ordereasy.order_service.entity.OrderStatus;
 import org.springframework.web.bind.annotation.RestController;
 import com.ordereasy.order_service.dto.CreateOrderRequest;
 import com.ordereasy.order_service.dto.OrderResponse;
@@ -58,13 +59,20 @@ public class OrderController {
 
         Order order = orderService.getOrderById(id);
 
-        if (order == null) {
-            return null; // temporary (we’ll improve later)
-        }
-
         return OrderResponse.builder()
                 .orderId(order.getId())
                 .status(order.getStatus().name())
                 .build();
     }
+    @PutMapping("/{id}/status")
+    public OrderResponse updateOrderStatus(@PathVariable Long id,
+                                           @RequestParam OrderStatus status)
+    {
+        Order updatedOrder = orderService.updateOrderStatus(id,status);
+        return OrderResponse.builder()
+                .orderId(updatedOrder.getId())
+                .status(updatedOrder.getStatus().name())
+                .build();
+    }
+
 }
