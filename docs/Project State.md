@@ -4,48 +4,56 @@
 
 ## 📅 Current Phase
 
-Phase B1 — Order Service
+Phase B1 — Order Service ✅ COMPLETED
 
 ---
 
 ## ✅ Completed
 
-* Spring Boot setup
-* MySQL integration
-* Order entity & repository
-* Create Order API
-* Get All Orders API
-* Get Order by ID API
-* DTO implementation
-* Validation basics
+- Spring Boot setup
+- MySQL integration
+- Order entity & repository
+- Create Order API
+- Get All Orders API
+- Get Order by ID API
+- Update Order Status API
+- DTO implementation
+- Validation
+- Global Exception Handling
 
 ---
 
-## 🔄 In Progress
+## 🚀 Advanced Features Completed
 
-* Error handling improvements
-
----
-
-## ⏳ Pending
-
-* Not Found handling
-* Update Order Status API
-* Pagination
-* Logging
+- Pagination (Pageable)
+- Dynamic Sorting
+- Filtering:
+  - status
+  - userId
+- Range Filtering:
+  - amount
+  - date
 
 ---
 
 ## 🧠 Current Understanding
 
-* DTO importance
-* Request lifecycle
-* Validation vs parsing
-* Layered architecture
+- Layered architecture
+- DTO importance
+- Pagination at DB level
+- Dynamic API design
+- Filtering strategies
+- Microservices basics
 
 ---
 
-## 🚀 Next Step
+## 🚀 Next Phase
 
-Step 13.3 — Proper Not Found Exception
+Phase B2 — Auth Service (JWT & Security)
 
+---
+
+## 🎯 Current Level
+
+Intermediate Backend Developer  
+Building production-ready APIs

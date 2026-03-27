@@ -46,44 +46,83 @@ public class OrderService {
     }
 
     public PaginatedOrderResponse getOrders(
-            int page,
-            int size,
-            String sortBy,
-            String direction,
-            OrderStatus status,
-            Long userId
+
+            int page,              // 🔹 page number (0-based index)
+            int size,              // 🔹 number of records per page
+
+            String sortBy,         // 🔹 field name to sort (e.g., createdAt, totalAmount)
+            String direction,      // 🔹 sorting direction (asc / desc)
+
+            OrderStatus status,    // 🔹 filter: order status (optional)
+            Long userId,           // 🔹 filter: userId (optional)
+
+            Double minAmount,      // 🔹 filter: minimum amount (optional)
+            Double maxAmount,      // 🔹 filter: maximum amount (optional)
+
+            LocalDateTime startDate, // 🔹 filter: start date (optional)
+            LocalDateTime endDate    // 🔹 filter: end date (optional)
     ) {
 
+        // 🔥 Step 1: Create Sort object dynamically
         Sort sort = direction.equalsIgnoreCase("asc")
-                ? Sort.by(sortBy).ascending()
-                : Sort.by(sortBy).descending();
+                ? Sort.by(sortBy).ascending()     // if asc → ascending order
+                : Sort.by(sortBy).descending();   // else → descending order
 
+        // 🔥 Step 2: Create Pageable (pagination + sorting combined)
         Pageable pageable = PageRequest.of(page, size, sort);
 
+        // 🔥 Step 3: Decide which query to execute based on filters
         Page<Order> orderPage;
 
-        if (status != null && userId != null) {
-            orderPage = orderRepository.findByStatusAndUserId(status, userId, pageable);
+        // 🔹 Priority 1: Amount range filter (highest priority)
+        if (minAmount != null && maxAmount != null) {
+            orderPage = orderRepository.findByTotalAmountBetween(
+                    minAmount, maxAmount, pageable
+            );
+
+            // 🔹 Priority 2: Date range filter
+        } else if (startDate != null && endDate != null) {
+            orderPage = orderRepository.findByCreatedAtBetween(
+                    startDate, endDate, pageable
+            );
+
+            // 🔹 Priority 3: Combined filter (status + userId)
+        } else if (status != null && userId != null) {
+            orderPage = orderRepository.findByStatusAndUserId(
+                    status, userId, pageable
+            );
+
+            // 🔹 Only status filter
         } else if (status != null) {
-            orderPage = orderRepository.findByStatus(status, pageable);
+            orderPage = orderRepository.findByStatus(
+                    status, pageable
+            );
+
+            // 🔹 Only userId filter
         } else if (userId != null) {
-            orderPage = orderRepository.findByUserId(userId, pageable);
+            orderPage = orderRepository.findByUserId(
+                    userId, pageable
+            );
+
+            // 🔹 No filters → fetch all orders
         } else {
             orderPage = orderRepository.findAll(pageable);
         }
 
+        // 🔥 Step 4: Convert Entity → DTO using map()
         Page<OrderResponse> responsePage = orderPage.map(order ->
                 new OrderResponse(
-                        order.getId(),
-                        order.getStatus()
+                        order.getId(),      // map id → orderId
+                        order.getStatus()   // map status
                 )
         );
 
+        // 🔥 Step 5: Build clean custom response
         return new PaginatedOrderResponse(
-                responsePage.getContent(),
-                responsePage.getNumber(),
-                responsePage.getTotalPages(),
-                responsePage.getTotalElements()
+                responsePage.getContent(),        // list of orders
+                responsePage.getNumber(),         // current page
+                responsePage.getTotalPages(),     // total pages
+                responsePage.getTotalElements()   // total records
         );
     }
 }

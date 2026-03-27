@@ -2,12 +2,12 @@
 
 ## 📌 Overview
 
-OrderEasy is a microservices-based quick commerce backend system designed to handle:
+OrderEasy is a microservices-ready backend system designed to handle:
 
-* Order processing
-* Inventory management
-* Delivery assignment
-* Real-time tracking
+- Order processing
+- Authentication
+- Inventory management
+- Delivery system (future)
 
 ---
 
@@ -15,58 +15,47 @@ OrderEasy is a microservices-based quick commerce backend system designed to han
 
 Currently implemented as:
 
-Monolithic Spring Boot Service → Order Service
+Modular Monolith (Single Service → Order Service)
 
 ---
 
 ## 🧩 Layers
 
 ### 1. Controller Layer
-
-* Handles HTTP requests
-* Example:
-
-  * POST /orders
-  * GET /orders
-  * GET /orders/{id}
+- Handles HTTP requests
+- Example:
+  - POST /orders
+  - GET /orders
+  - GET /orders/{id}
 
 ---
 
 ### 2. Service Layer
-
-* Contains business logic
-* Example:
-
-  * createOrder()
-  * getAllOrders()
-  * getOrderById()
+- Contains business logic
+- Handles filtering, pagination, sorting
 
 ---
 
 ### 3. Repository Layer
-
-* Communicates with database
-* Uses Spring Data JPA
+- Communicates with database
+- Uses Spring Data JPA
 
 ---
 
 ### 4. Entity Layer
-
-* Represents database tables
-* Example:
-
-  * Order
-  * OrderStatus
+- Represents database tables
+- Example:
+  - Order
+  - OrderStatus
 
 ---
 
 ### 5. DTO Layer
-
-* Controls API input/output
-* Example:
-
-  * CreateOrderRequest
-  * OrderResponse
+- Controls API input/output
+- Example:
+  - CreateOrderRequest
+  - OrderResponse
+  - PaginatedOrderResponse
 
 ---
 
@@ -78,18 +67,29 @@ Client → Controller → Service → Repository → Database
 
 ## 🗄️ Database
 
-* MySQL
-* Separate DB per service (planned)
+- MySQL
+- Pagination handled at DB level (LIMIT, OFFSET)
+- Separate DB per service (planned)
+
+---
+
+## 🚀 Features Implemented
+
+- CRUD APIs
+- Validation
+- Exception Handling
+- Pagination
+- Dynamic Sorting
+- Filtering (status, userId)
+- Range Filtering (amount, date)
 
 ---
 
 ## 🚀 Future Architecture
 
-* Microservices split:
-
-  * Auth Service
-  * Inventory Service
-  * Delivery Service
-* Kafka for event-driven communication
-* API Gateway
-
+- Separate services:
+  - Auth Service
+  - Inventory Service
+- API Gateway
+- Service-to-service communication
+- Kafka (event-driven)

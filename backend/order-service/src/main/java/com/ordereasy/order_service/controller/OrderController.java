@@ -9,6 +9,7 @@ import com.ordereasy.order_service.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -80,15 +81,51 @@ public class OrderController {
     // 🔥 PAGINATION API (MAIN ONE)
     @GetMapping
     public PaginatedOrderResponse getOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction,
-            @RequestParam(required = false) OrderStatus status,
-            @RequestParam(required = false) Long userId
-    ) {
-        return orderService.getOrders(page, size, sortBy, direction, status, userId);
-    }
 
+            // 🔹 Pagination params (default values if not provided)
+            @RequestParam(defaultValue = "0") int page,      // page number (0-based)
+            @RequestParam(defaultValue = "5") int size,      // number of records per page
+
+            // 🔹 Sorting params
+            @RequestParam(defaultValue = "createdAt") String sortBy,   // field to sort
+            @RequestParam(defaultValue = "desc") String direction,     // asc / desc
+
+            // 🔹 Basic filtering (optional)
+            @RequestParam(required = false) OrderStatus status,  // filter by order status
+            @RequestParam(required = false) Long userId,         // filter by userId
+
+            // 🔹 Range filtering (optional)
+            @RequestParam(required = false) Double minAmount,    // minimum amount
+            @RequestParam(required = false) Double maxAmount,    // maximum amount
+
+            // 🔹 Date filtering (received as String from URL)
+            @RequestParam(required = false) String startDate,    // start date (String)
+            @RequestParam(required = false) String endDate       // end date (String)
+    ) {
+
+        // 🔥 Convert startDate String → LocalDateTime (if present)
+        LocalDateTime start = (startDate != null)
+                ? LocalDateTime.parse(startDate)   // parse string to date-time
+                : null;                            // if not provided → null
+
+        // 🔥 Convert endDate String → LocalDateTime (if present)
+        LocalDateTime end = (endDate != null)
+                ? LocalDateTime.parse(endDate)
+                : null;
+
+        // 🚀 Call service layer with all parameters
+        return orderService.getOrders(
+                page,        // pagination: page number
+                size,        // pagination: page size
+                sortBy,      // sorting field
+                direction,   // sorting direction
+                status,      // filter: status
+                userId,      // filter: userId
+                minAmount,   // filter: min amount
+                maxAmount,   // filter: max amount
+                start,       // filter: start date
+                end          // filter: end date
+        );
+    }
 
 }
