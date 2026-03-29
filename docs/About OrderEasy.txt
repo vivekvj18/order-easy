@@ -1,0 +1,50 @@
+🚀 OrderEasy — Full Project Explanation
+🧠 What is OrderEasy?
+
+OrderEasy is a microservices-based quick commerce backend system inspired by platforms like Blinkit, Zepto, and Instamart.
+
+It is designed to simulate a real-world production system that handles:
+
+Order placement
+Inventory management
+Delivery assignment
+Real-time tracking
+Event-driven communication
+🎯 What problem does it solve?
+
+In quick commerce systems, users expect:
+
+⚡ Fast order placement
+📦 Instant availability of products
+🚚 Real-time delivery updates
+
+But behind the scenes, the system must handle:
+
+Multiple users placing orders simultaneously
+Stock consistency across warehouses
+Assigning delivery partners efficiently
+Keeping all services in sync
+
+👉 OrderEasy is designed to solve these challenges using scalable backend architecture
+
+🏗️ What are you building exactly?
+
+You are building a system that behaves like:
+
+👉 A simplified version of:
+
+Blinkit
+Zepto
+Instamart
+🧩 Core Flow of OrderEasy
+User → Places Order
+       ↓
+Order Service → Saves order
+       ↓
+Inventory Service → Reserves stock
+       ↓
+Delivery Service → Assigns rider
+       ↓
+Tracking Service → Updates location
+       ↓
+Notification Service → Sends updates

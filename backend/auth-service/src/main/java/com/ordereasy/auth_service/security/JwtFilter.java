@@ -7,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,8 @@ import java.nio.charset.StandardCharsets;
 public class JwtFilter extends OncePerRequestFilter {
 
     // 🔐 SAME SECRET KEY (must match JwtUtil)
-    private final String SECRET_KEY = "mysecretkeymysecretkeymysecretkeymysecretkeymysecretkey";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     @Override
     protected void doFilterInternal(
@@ -42,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
             if (token != null) {
 
                 String email = Jwts.parserBuilder()
-                        .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+                        .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
                         .build()
                         .parseClaimsJws(token)
                         .getBody()

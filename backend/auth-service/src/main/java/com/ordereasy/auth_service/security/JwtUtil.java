@@ -3,6 +3,7 @@ package com.ordereasy.auth_service.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -12,7 +13,8 @@ import java.util.Date;
 public class JwtUtil {
 
     // 🔐 Secret key used to sign the JWT (should be kept secure)
-    private final String SECRET_KEY = "mysecretkeymysecretkeymysecretkeymysecretkeymysecretkey";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     // 🔥 Method to generate JWT token using user email
     public String generateToken(String email) {
@@ -29,7 +31,7 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 ))
 
                 // 🔐 Sign the token using HS256 algorithm + secret key
-                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8)))
 
                 // 🎯 Build and return the final token string
                 .compact();
