@@ -38,11 +38,12 @@ public class AuthController {
 
     @PostMapping("/auth/login")
     public String login(@RequestBody LoginRequest request) {
-        userService.loginUser(
+        User user = userService.loginUser(
                 request.getEmail(),
                 request.getPassword()
         );
-        return jwtUtil.generateToken(request.getEmail());
+
+        return jwtUtil.generateToken(user.getEmail(), user.getRole());
     }
 
     @GetMapping("/test")

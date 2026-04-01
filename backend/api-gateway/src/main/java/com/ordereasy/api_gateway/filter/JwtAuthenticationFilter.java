@@ -1,5 +1,6 @@
 package com.ordereasy.api_gateway.filter;
 
+import io.jsonwebtoken.Claims;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -40,10 +41,25 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         String token = authHeader.substring(7);
 
         // ✅ JWT validation
+        Claims claims;
+
         try {
-            jwtUtil.validateToken(token);
+            claims = jwtUtil.validateToken(token);
         } catch (Exception e) {
             return onError(exchange, "Invalid or Expired JWT Token", HttpStatus.UNAUTHORIZED);
+        }
+
+        // 🔥 ROLE EXTRACT
+        String role = claims.get("role", String.class);
+
+        // CUSTOMER rules
+        if (path.startsWith("/orders") && !"CUSTOMER".equals(role) && !"ADMIN".equals(role)) {
+            return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+        }
+
+        // ADMIN only routes (future)
+        if (path.startsWith("/admin") && !"ADMIN".equals(role)) {
+            return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
         }
 
         return chain.filter(exchange);
