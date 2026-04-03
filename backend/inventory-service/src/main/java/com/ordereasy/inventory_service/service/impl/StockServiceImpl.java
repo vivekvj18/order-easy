@@ -21,16 +21,13 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public StockResponse getStock(Long productId) {
-
         Stock stock = stockRepository.findByProductId(productId)
-                .orElseThrow(() -> new StockNotFoundException("Stock not found"));
-
+                .orElseThrow(() -> new StockNotFoundException("Stock not found for product id: " + productId));
         return mapToResponse(stock);
     }
 
     @Override
     public StockResponse addStock(Long productId, AddStockRequest request) {
-
         Stock stock = stockRepository.findByProductId(productId)
                 .orElse(Stock.builder()
                         .productId(productId)
@@ -46,20 +43,16 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public StockResponse reserveStock(ReserveStockRequest request) {
-
         Stock stock = stockRepository.findByProductId(request.getProductId())
-                .orElseThrow(() -> new StockNotFoundException("Stock not found"));
+                .orElseThrow(() -> new StockNotFoundException("Stock not found for product id: " + request.getProductId()));
 
         int available = stock.getQuantity() - stock.getReservedQuantity();
 
         if (available < request.getQuantity()) {
-            throw new InsufficientStockException("Insufficient stock");
+            throw new InsufficientStockException("Insufficient stock. Available: " + available);
         }
 
-        stock.setReservedQuantity(
-                stock.getReservedQuantity() + request.getQuantity()
-        );
-
+        stock.setReservedQuantity(stock.getReservedQuantity() + request.getQuantity());
         stock.setUpdatedAt(LocalDateTime.now());
 
         return mapToResponse(stockRepository.save(stock));
@@ -67,23 +60,21 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public StockResponse releaseStock(ReserveStockRequest request) {
-
         Stock stock = stockRepository.findByProductId(request.getProductId())
-                .orElseThrow(() -> new StockNotFoundException("Stock not found"));
+                .orElseThrow(() -> new StockNotFoundException("Stock not found for product id: " + request.getProductId()));
 
-        stock.setReservedQuantity(
-                stock.getReservedQuantity() - request.getQuantity()
-        );
+        if (stock.getReservedQuantity() < request.getQuantity()) {
+            throw new InsufficientStockException("Cannot release more than reserved quantity");
+        }
 
+        stock.setReservedQuantity(stock.getReservedQuantity() - request.getQuantity());
         stock.setUpdatedAt(LocalDateTime.now());
 
         return mapToResponse(stockRepository.save(stock));
     }
 
     private StockResponse mapToResponse(Stock stock) {
-
         int available = stock.getQuantity() - stock.getReservedQuantity();
-
         return StockResponse.builder()
                 .productId(stock.getProductId())
                 .quantity(stock.getQuantity())
