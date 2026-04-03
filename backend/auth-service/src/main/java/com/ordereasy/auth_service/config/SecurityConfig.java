@@ -15,37 +15,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class SecurityConfig {
 
-    // 🔐 Register JWT Filter as a Spring Bean
-    @Bean
-    public JwtFilter jwtFilter() {
-        return new JwtFilter();
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
-                // ❌ Disable CSRF (for testing / REST APIs)
                 .csrf(csrf -> csrf.disable())
-
-                // 🔐 Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/auth/signup",
-                                "/auth/login",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**"
-                        ).permitAll() // public APIs
-                        .anyRequest().authenticated() // बाकी सब secure
+                        .requestMatchers("/auth/signup", "/auth/login", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-
-                // 🔥 Add JWT Filter BEFORE Spring's default auth filter
-                .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
-
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
-    // 🔐 Password encoder for hashing passwords
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

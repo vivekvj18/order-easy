@@ -16,6 +16,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+@Component
 public class JwtFilter extends OncePerRequestFilter {
 
     // 🔐 SAME SECRET KEY (must match JwtUtil)
