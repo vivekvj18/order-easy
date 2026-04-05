@@ -1,7 +1,9 @@
 package com.ordereasy.order_service.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ordereasy.order_service.event.OrderCancelledEvent;
 import com.ordereasy.order_service.event.OrderCreatedEvent;
+import com.ordereasy.order_service.event.OrderStatusUpdatedEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +19,25 @@ public class OrderKafkaProducer {
 
     public void sendOrderCreatedEvent(OrderCreatedEvent event) {
         try {
-            String message = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send("order-created", message);
+            kafkaTemplate.send("order-created", objectMapper.writeValueAsString(event));
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send Kafka event", e);
+            throw new RuntimeException("Failed to send order-created event", e);
+        }
+    }
+
+    public void sendOrderCancelledEvent(OrderCancelledEvent event) {
+        try {
+            kafkaTemplate.send("order-cancelled", objectMapper.writeValueAsString(event));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send order-cancelled event", e);
+        }
+    }
+
+    public void sendOrderStatusUpdatedEvent(OrderStatusUpdatedEvent event) {
+        try {
+            kafkaTemplate.send("order-status-updated", objectMapper.writeValueAsString(event));
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send order-status-updated event", e);
         }
     }
 }

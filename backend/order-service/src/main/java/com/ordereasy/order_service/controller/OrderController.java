@@ -80,6 +80,15 @@ public class OrderController {
                 .build();
     }
 
+    @PutMapping("/{id}/cancel")
+    public OrderResponse cancelOrder(@PathVariable Long id) {
+        Order cancelledOrder = orderService.cancelOrder(id);
+        return OrderResponse.builder()
+                .orderId(cancelledOrder.getId())
+                .status(cancelledOrder.getStatus())
+                .build();
+    }
+
     // 🔥 PAGINATION API (MAIN ONE)
     @GetMapping
     public PaginatedOrderResponse getOrders(

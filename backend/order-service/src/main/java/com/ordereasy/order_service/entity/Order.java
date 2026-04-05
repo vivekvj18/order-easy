@@ -26,6 +26,7 @@ public class Order {
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 20)
     private OrderStatus status;
 
     private LocalDateTime createdAt;
