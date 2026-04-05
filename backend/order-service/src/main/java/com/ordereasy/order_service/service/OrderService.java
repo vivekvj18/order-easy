@@ -1,15 +1,20 @@
 package com.ordereasy.order_service.service;
 
+import com.ordereasy.order_service.dto.OrderItemResponse;
 import com.ordereasy.order_service.dto.OrderResponse;
+import com.ordereasy.order_service.dto.CreateOrderRequest;
 import com.ordereasy.order_service.dto.PaginatedOrderResponse;
 import com.ordereasy.order_service.entity.Order;
+import com.ordereasy.order_service.entity.OrderItem;
 import com.ordereasy.order_service.entity.OrderStatus;
 import com.ordereasy.order_service.event.OrderCancelledEvent;
 import com.ordereasy.order_service.event.OrderCreatedEvent;
+import com.ordereasy.order_service.event.OrderItemEvent;
 import com.ordereasy.order_service.event.OrderStatusUpdatedEvent;
 import com.ordereasy.order_service.exception.OrderNotFoundException;
 import com.ordereasy.order_service.kafka.OrderKafkaProducer;
 import com.ordereasy.order_service.repository.OrderRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -31,39 +37,79 @@ public class OrderService {
         this.kafkaProducer = kafkaProducer;
     }
 
-    public Order createOrder(Order order) {
-        order.setStatus(OrderStatus.CREATED);
-        order.setCreatedAt(LocalDateTime.now());
+    @Transactional
+    public OrderResponse createOrder(CreateOrderRequest request) {
+
+        List<OrderItem> items = request.getItems().stream()
+                .map(itemReq -> OrderItem.builder()
+                        .productId(itemReq.getProductId())
+                        .quantity(itemReq.getQuantity())
+                        .price(itemReq.getPrice())
+                        .build())
+                .collect(Collectors.toList());
+
+        double totalAmount = items.stream()
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .sum();
+
+        Order order = Order.builder()
+                .userId(request.getUserId())
+                .totalAmount(totalAmount)
+                .status(OrderStatus.CREATED)
+                .createdAt(LocalDateTime.now())
+                .items(items)
+                .build();
+
+        items.forEach(item -> item.setOrder(order));
+
         Order savedOrder = orderRepository.save(order);
+
+        List<OrderItemEvent> itemEvents = savedOrder.getItems().stream()
+                .map(item -> {
+                    OrderItemEvent e = new OrderItemEvent();
+                    e.setProductId(item.getProductId());
+                    e.setQuantity(item.getQuantity());
+                    return e;
+                })
+                .collect(Collectors.toList());
 
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(savedOrder.getId());
         event.setUserId(savedOrder.getUserId());
-        event.setProductId(savedOrder.getProductId());
-        event.setQuantity(savedOrder.getQuantity());
         event.setTotalAmount(savedOrder.getTotalAmount());
+        event.setItems(itemEvents);
         kafkaProducer.sendOrderCreatedEvent(event);
 
-        return savedOrder;
+        return mapToResponse(savedOrder);
     }
 
-    public Order cancelOrder(Long id) {
+    @Transactional
+    public OrderResponse cancelOrder(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
         order.setStatus(OrderStatus.CANCELLED);
         Order savedOrder = orderRepository.save(order);
 
-        OrderCancelledEvent event = new OrderCancelledEvent();
-        event.setOrderId(savedOrder.getId());
-        event.setProductId(savedOrder.getProductId());
-        event.setQuantity(savedOrder.getQuantity());
-        kafkaProducer.sendOrderCancelledEvent(event);
+        List<OrderItemEvent> itemEvents = savedOrder.getItems().stream()
+                .map(item -> {
+                    OrderItemEvent e = new OrderItemEvent();
+                    e.setProductId(item.getProductId());
+                    e.setQuantity(item.getQuantity());
+                    return e;
+                })
+                .collect(Collectors.toList());
 
-        return savedOrder;
+        OrderCancelledEvent cancelEvent = new OrderCancelledEvent();
+        cancelEvent.setOrderId(savedOrder.getId());
+        cancelEvent.setItems(itemEvents);
+        kafkaProducer.sendOrderCancelledEvent(cancelEvent);
+
+        return mapToResponse(savedOrder);
     }
 
-    public Order updateOrderStatus(Long id, OrderStatus status) {
+    @Transactional
+    public OrderResponse updateOrderStatus(Long id, OrderStatus status) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
@@ -75,16 +121,20 @@ public class OrderService {
         event.setStatus(savedOrder.getStatus().name());
         kafkaProducer.sendOrderStatusUpdatedEvent(event);
 
-        return savedOrder;
+        return mapToResponse(savedOrder);
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
+        return mapToResponse(order);
     }
 
     public PaginatedOrderResponse getOrders(
@@ -114,15 +164,34 @@ public class OrderService {
             orderPage = orderRepository.findAll(pageable);
         }
 
-        Page<OrderResponse> responsePage = orderPage.map(o ->
-                new OrderResponse(o.getId(), o.getStatus())
-        );
-
         return new PaginatedOrderResponse(
-                responsePage.getContent(),
-                responsePage.getNumber(),
-                responsePage.getTotalPages(),
-                responsePage.getTotalElements()
+                orderPage.getContent().stream()
+                        .map(this::mapToResponse)
+                        .collect(Collectors.toList()),
+                orderPage.getNumber(),
+                orderPage.getTotalPages(),
+                orderPage.getTotalElements()
         );
+    }
+
+    private OrderResponse mapToResponse(Order order) {
+        List<OrderItemResponse> itemResponses = order.getItems() == null
+                ? List.of()
+                : order.getItems().stream()
+                .map(item -> OrderItemResponse.builder()
+                        .productId(item.getProductId())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .build())
+                .collect(Collectors.toList());
+
+        return OrderResponse.builder()
+                .orderId(order.getId())
+                .userId(order.getUserId())
+                .status(order.getStatus())
+                .totalAmount(order.getTotalAmount())
+                .createdAt(order.getCreatedAt())
+                .items(itemResponses)
+                .build();
     }
 }

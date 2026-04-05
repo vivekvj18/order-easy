@@ -24,10 +24,12 @@ public class OrderKafkaConsumer {
             OrderCreatedEvent event = objectMapper.readValue(message, OrderCreatedEvent.class);
             System.out.println("Order created event received: " + event.getOrderId());
 
-            ReserveStockRequest request = new ReserveStockRequest();
-            request.setProductId(event.getProductId());
-            request.setQuantity(event.getQuantity());
-            stockService.reserveStock(request);
+            event.getItems().forEach(item -> {
+                ReserveStockRequest request = new ReserveStockRequest();
+                request.setProductId(item.getProductId());
+                request.setQuantity(item.getQuantity());
+                stockService.reserveStock(request);
+            });
 
         } catch (Exception e) {
             System.err.println("Failed to process order-created event: " + e.getMessage());
@@ -40,10 +42,12 @@ public class OrderKafkaConsumer {
             OrderCancelledEvent event = objectMapper.readValue(message, OrderCancelledEvent.class);
             System.out.println("Order cancelled event received: " + event.getOrderId());
 
-            ReserveStockRequest request = new ReserveStockRequest();
-            request.setProductId(event.getProductId());
-            request.setQuantity(event.getQuantity());
-            stockService.releaseStock(request);
+            event.getItems().forEach(item -> {
+                ReserveStockRequest request = new ReserveStockRequest();
+                request.setProductId(item.getProductId());
+                request.setQuantity(item.getQuantity());
+                stockService.releaseStock(request);
+            });
 
         } catch (Exception e) {
             System.err.println("Failed to process order-cancelled event: " + e.getMessage());

@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
-@Table(name="orders")
+@Table(name = "orders")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,9 +21,6 @@ public class Order {
 
     private Long userId;
 
-    private Long productId;     // ✅ ADD
-    private Integer quantity;   // ✅ ADD
-
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
@@ -30,4 +28,7 @@ public class Order {
     private OrderStatus status;
 
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> items;
 }
