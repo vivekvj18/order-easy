@@ -4,7 +4,9 @@ import com.ordereasy.order_service.dto.OrderResponse;
 import com.ordereasy.order_service.dto.PaginatedOrderResponse;
 import com.ordereasy.order_service.entity.Order;
 import com.ordereasy.order_service.entity.OrderStatus;
+import com.ordereasy.order_service.event.OrderCreatedEvent;
 import com.ordereasy.order_service.exception.OrderNotFoundException;
+import com.ordereasy.order_service.kafka.OrderKafkaProducer;
 import com.ordereasy.order_service.repository.OrderRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,14 +21,31 @@ import java.util.List;
 public class OrderService {
     private final OrderRepository orderRepository;
 
-    public OrderService(OrderRepository orderRepository) {
+    private final OrderKafkaProducer kafkaProducer;
+
+    public OrderService(OrderRepository orderRepository,
+                        OrderKafkaProducer kafkaProducer) {
         this.orderRepository = orderRepository;
+        this.kafkaProducer = kafkaProducer;
     }
 
     public Order createOrder(Order order) {
         order.setStatus(OrderStatus.CREATED);
         order.setCreatedAt(LocalDateTime.now());
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+
+        // 🔥 EVENT BANANA
+        OrderCreatedEvent event = new OrderCreatedEvent();
+        event.setOrderId(savedOrder.getId());
+        event.setUserId(savedOrder.getUserId());
+        event.setProductId(savedOrder.getProductId());
+        event.setQuantity(savedOrder.getQuantity());
+        event.setTotalAmount(savedOrder.getTotalAmount());
+
+        // 🔥 KAFKA MEIN BHEJNA
+        kafkaProducer.sendOrderCreatedEvent(event);
+
+        return savedOrder;
     }
 
     public List<Order> getAllOrders() {

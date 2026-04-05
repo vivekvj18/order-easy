@@ -1,0 +1,6 @@
+concurency kaise handle hogi bahut saare orders ek hi item ke ek hi timestamp pe create ho gaye like a sale
+
+aisa table jo order logs rakhe order id create timestamp
+
+
+ek order mein multiple products ho sakte hain

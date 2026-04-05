@@ -62,6 +62,19 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
         }
 
+        // Products — CUSTOMER read kar sakta hai, ADMIN sab kuch
+        if (path.startsWith("/products") && request.getMethod().name().equals("GET")) {
+            // CUSTOMER + ADMIN allow
+            if (!"CUSTOMER".equals(role) && !"ADMIN".equals(role)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
+        } else if (path.startsWith("/products") || path.startsWith("/stock")) {
+            // POST/PUT/DELETE sirf ADMIN
+            if (!"ADMIN".equals(role)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
+        }
+
         return chain.filter(exchange);
     }
 

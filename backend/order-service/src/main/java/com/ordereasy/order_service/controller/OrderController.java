@@ -29,6 +29,8 @@ public class OrderController {
 
         Order order = Order.builder()
                 .userId(request.getUserId())
+                .productId(request.getProductId())
+                .quantity(request.getQuantity())
                 .totalAmount(request.getTotalAmount())
                 .build();
 

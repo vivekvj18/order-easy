@@ -20,11 +20,13 @@ public class Order {
 
     private Long userId;
 
+    private Long productId;     // ✅ ADD
+    private Integer quantity;   // ✅ ADD
+
     private Double totalAmount;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
     private LocalDateTime createdAt;
-
 }
