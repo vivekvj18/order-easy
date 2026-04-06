@@ -1,5 +1,6 @@
 package com.ordereasy.order_service.entity;
 
+import com.ordereasy.order_service.enums.DeliverySlot;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,6 +27,10 @@ public class Order {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private OrderStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_slot", nullable = false)
+    private DeliverySlot deliverySlot;
 
     private LocalDateTime createdAt;
 

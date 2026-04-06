@@ -1,5 +1,6 @@
 package com.ordereasy.order_service.dto;
 
+import com.ordereasy.order_service.enums.DeliverySlot;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -16,4 +17,7 @@ public class CreateOrderRequest {
     @NotEmpty(message = "Order must have at least one item")
     @Valid
     private List<OrderItemRequest> items;
+
+    @NotNull(message = "Delivery slot cannot be null")
+    private DeliverySlot deliverySlot;
 }

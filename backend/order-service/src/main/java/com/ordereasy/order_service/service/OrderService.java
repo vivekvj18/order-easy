@@ -56,6 +56,7 @@ public class OrderService {
                 .userId(request.getUserId())
                 .totalAmount(totalAmount)
                 .status(OrderStatus.CREATED)
+                .deliverySlot(request.getDeliverySlot())   // ✅ NEW
                 .createdAt(LocalDateTime.now())
                 .items(items)
                 .build();
@@ -78,6 +79,8 @@ public class OrderService {
         event.setUserId(savedOrder.getUserId());
         event.setTotalAmount(savedOrder.getTotalAmount());
         event.setItems(itemEvents);
+        event.setDeliverySlot(savedOrder.getDeliverySlot());   // ✅ NEW
+
         kafkaProducer.sendOrderCreatedEvent(event);
 
         return mapToResponse(savedOrder);
@@ -192,6 +195,7 @@ public class OrderService {
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .items(itemResponses)
+                .deliverySlot(order.getDeliverySlot())   // ✅ ADD THIS LINE
                 .build();
     }
 }

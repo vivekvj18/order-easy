@@ -1,6 +1,7 @@
 package com.ordereasy.order_service.dto;
 
 import com.ordereasy.order_service.entity.OrderStatus;
+import com.ordereasy.order_service.enums.DeliverySlot;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,4 +17,5 @@ public class OrderResponse {
     private Double totalAmount;
     private LocalDateTime createdAt;
     private List<OrderItemResponse> items;
+    private DeliverySlot deliverySlot;
 }

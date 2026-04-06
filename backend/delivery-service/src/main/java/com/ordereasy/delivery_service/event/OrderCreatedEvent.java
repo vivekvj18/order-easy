@@ -1,6 +1,6 @@
-package com.ordereasy.order_service.event;
+package com.ordereasy.delivery_service.event;
 
-import com.ordereasy.order_service.enums.DeliverySlot;
+import com.ordereasy.delivery_service.enums.DeliverySlot;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 public class OrderCreatedEvent {
+
     private Long orderId;
     private Long userId;
     private Double totalAmount;
