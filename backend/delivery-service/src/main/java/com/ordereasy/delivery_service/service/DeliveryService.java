@@ -1,5 +1,6 @@
 package com.ordereasy.delivery_service.service;
 
+import com.ordereasy.delivery_service.dto.DeliveryResponse;
 import com.ordereasy.delivery_service.entity.Delivery;
 import com.ordereasy.delivery_service.entity.DeliveryPartner;
 import com.ordereasy.delivery_service.entity.DeliveryStatus;
@@ -49,4 +50,48 @@ public class DeliveryService {
         partnerRepository.save(selectedPartner);
 
     }
+
+    private DeliveryResponse mapToResponse(Delivery delivery) {
+        return DeliveryResponse.builder()
+                .orderId(delivery.getOrderId())
+                .partnerId(delivery.getPartner().getId())
+                .partnerName(delivery.getPartner().getName())
+                .status(delivery.getStatus())
+                .assignedAt(delivery.getAssignedAt())
+                .build();
+    }
+
+    public List<DeliveryResponse> getAllDeliveries() {
+        return deliveryRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    public DeliveryResponse getDeliveryByOrderId(Long orderId) {
+        Delivery delivery = deliveryRepository.findByOrderId(orderId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+
+        return mapToResponse(delivery);
+    }
+
+    public DeliveryResponse updateDeliveryStatus(Long deliveryId, DeliveryStatus status) {
+
+        Delivery delivery = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new RuntimeException("Delivery not found"));
+
+        delivery.setStatus(status);
+        delivery.setUpdatedAt(LocalDateTime.now());
+
+        if (status == DeliveryStatus.DELIVERED) {
+            DeliveryPartner partner = delivery.getPartner();
+            partner.setStatus(PartnerStatus.AVAILABLE);
+            partnerRepository.save(partner);
+        }
+
+        Delivery updatedDelivery = deliveryRepository.save(delivery);
+        return mapToResponse(updatedDelivery);
+    }
+
+
 }
