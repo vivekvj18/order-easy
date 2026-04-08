@@ -3,116 +3,118 @@
 ---
 
 ## 🔹 DTO Usage
-
-Decision:
-Used DTOs instead of exposing entities.
-
-Reason:
-- Prevent exposing internal fields
-- Control API contract
-- Improve security
+(keep your existing content)
 
 ---
 
 ## 🔹 Layered Architecture
-
-Decision:
-Controller → Service → Repository
-
-Reason:
-- Separation of concerns
-- Maintainability
-- Scalability
+(keep existing)
 
 ---
 
 ## 🔹 Database Design
-
-Decision:
-Database-per-service (planned, partially followed)
-
-Reason:
-- Loose coupling
-- Microservices scalability
-- Independent deployment
+(keep existing)
 
 ---
 
 ## 🔹 Validation
-
-Decision:
-Used Jakarta Validation annotations
-
-Reason:
-- Prevent invalid data
-- Maintain data integrity
+(keep existing)
 
 ---
 
 ## 🔹 Exception Handling
-
-Decision:
-Global exception handling using @RestControllerAdvice
-
-Reason:
-- Consistent error responses
-- Better debugging
-- Avoid server crashes
+(keep existing)
 
 ---
 
 ## 🔹 Pagination & Sorting
-
-Decision:
-Used Spring Data JPA Pageable & Sort
-
-Reason:
-- Avoid loading large data in memory
-- Improve performance
-- Enable scalable APIs
+(keep existing)
 
 ---
 
 ## 🔹 Filtering Strategy
-
-Decision:
-Used query parameters + repository methods
-
-Reason:
-- Flexible API design
-- Supports real-world use cases
-- Easy to extend
+(keep existing)
 
 ---
 
 ## 🔹 Range Filtering
-
-Decision:
-Implemented amount and date range filtering
-
-Reason:
-- Handle real-world queries
-- Improve data querying flexibility
+(keep existing)
 
 ---
 
 ## 🔹 Service Separation (Planned)
-
-Decision:
-Separate services (Order, Auth, Inventory)
-
-Reason:
-- Microservices readiness
-- Independent scaling
-- Better system design
+(keep existing)
 
 ---
 
 ## 🔹 No OrderItems Initially
+(keep existing)
 
-Decision:
-Did not include OrderItem in initial phase
+---
+
+# 🚀 NEW DECISIONS (ADDED)
+
+## 🔹 Delivery Assignment Strategy
+Used Strategy Pattern
 
 Reason:
-- Avoid premature complexity
-- Introduce later with Inventory Service
+- Easily extendable
+- Clean design
+- Supports multiple strategies
+
+---
+
+## 🔹 Event-Driven Communication
+Used Kafka
+
+Reason:
+- Loose coupling
+- Scalability
+- Async processing
+
+---
+
+## 🔹 Delivery Lifecycle
+ASSIGNED → PICKED_UP → OUT_FOR_DELIVERY → DELIVERED
+
+Reason:
+- Real-world tracking
+- Clear state transitions
+
+---
+
+## 🔹 Partner State Sync
+- ASSIGNED → BUSY  
+- DELIVERED → AVAILABLE  
+
+Reason:
+- Prevent overload
+- Enable reuse
+
+---
+
+## 🔹 Future: Distance-Based Assignment
+(Haversine)
+
+Reason:
+- Nearest partner selection
+- Faster delivery
+
+---
+
+## 🔹 Future: Delivery Attempts
+Retry mechanism
+
+Reason:
+- Handle failures
+- Improve success rate
+
+---
+
+## 🔹 Future: Concurrency Handling
+Using locking
+
+Reason:
+- Avoid race conditions
+- Maintain consistency
+

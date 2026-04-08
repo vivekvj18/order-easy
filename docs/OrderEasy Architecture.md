@@ -1,95 +1,40 @@
 # 🏗️ OrderEasy — Architecture
 
-## 📌 Overview
-
-OrderEasy is a microservices-ready backend system designed to handle:
-
-- Order processing
-- Authentication
-- Inventory management
-- Delivery system (future)
+(keep all your existing content) :contentReference[oaicite:2]{index=2}
 
 ---
 
-## 🧠 Current Architecture (Phase B1)
+# 🚀 NEW SECTION — Delivery Service (B6)
 
-Currently implemented as:
-
-Modular Monolith (Single Service → Order Service)
-
----
-
-## 🧩 Layers
-
-### 1. Controller Layer
-- Handles HTTP requests
-- Example:
-  - POST /orders
-  - GET /orders
-  - GET /orders/{id}
+## Responsibilities:
+- Assign delivery partners
+- Manage lifecycle
+- Update partner status
+- Handle delivery APIs
 
 ---
 
-### 2. Service Layer
-- Contains business logic
-- Handles filtering, pagination, sorting
+## 🔄 Event Flow
+
+Order Service → Kafka → Delivery Service
 
 ---
 
-### 3. Repository Layer
-- Communicates with database
-- Uses Spring Data JPA
+## 🚀 Future Enhancements
 
----
+### 1. Distance-Based Assignment
+- Haversine formula
+- Nearest partner selection
 
-### 4. Entity Layer
-- Represents database tables
-- Example:
-  - Order
-  - OrderStatus
+### 2. Delivery Slot Optimization
+- SLA-based delivery
+- Expected time calculation
 
----
+### 3. Retry System
+- Delivery attempts tracking
+- Reassignment logic
 
-### 5. DTO Layer
-- Controls API input/output
-- Example:
-  - CreateOrderRequest
-  - OrderResponse
-  - PaginatedOrderResponse
+### 4. Concurrency Handling
+- Prevent duplicate assignment
+- Use DB locking
 
----
-
-## 🔄 Flow
-
-Client → Controller → Service → Repository → Database
-
----
-
-## 🗄️ Database
-
-- MySQL
-- Pagination handled at DB level (LIMIT, OFFSET)
-- Separate DB per service (planned)
-
----
-
-## 🚀 Features Implemented
-
-- CRUD APIs
-- Validation
-- Exception Handling
-- Pagination
-- Dynamic Sorting
-- Filtering (status, userId)
-- Range Filtering (amount, date)
-
----
-
-## 🚀 Future Architecture
-
-- Separate services:
-  - Auth Service
-  - Inventory Service
-- API Gateway
-- Service-to-service communication
-- Kafka (event-driven)

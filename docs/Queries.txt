@@ -1,6 +1,24 @@
-concurency kaise handle hogi bahut saare orders ek hi item ke ek hi timestamp pe create ho gaye like a sale
+(keep your existing questions) :contentReference[oaicite:4]{index=4}
 
-aisa table jo order logs rakhe order id create timestamp
+---
 
+# 🚀 NEW QUESTIONS (ADDED)
 
-ek order mein multiple products ho sakte hain
+🔹 How to handle concurrency?
+- DB locking
+- Optimistic locking
+- Kafka partitioning
+
+---
+
+🔹 How to find nearest partner?
+- Haversine formula
+- Geo-coordinates
+
+---
+
+🔹 Flash sale handling?
+- Kafka
+- Scaling
+- Inventory reservation
+
