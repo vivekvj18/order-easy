@@ -22,34 +22,40 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
 
+        // ✅ TEMPORARY: Sab routes public — gateway routing test ke liye
+        // TODO: Auth add karna hai baad mein
+//        return chain.filter(exchange);
+
+
+
+
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-        // ✅ Public routes skip
+        // Public routes skip
         if (path.startsWith("/auth")) {
             return chain.filter(exchange);
         }
 
-        // ✅ Header extract
+        // Header extract
         String authHeader = request.getHeaders().getFirst("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return onError(exchange, "Missing or Invalid Authorization Header", HttpStatus.UNAUTHORIZED);
         }
 
-        // ✅ Token extract
+        // Token extract
         String token = authHeader.substring(7);
 
-        // ✅ JWT validation
+        // JWT validation
         Claims claims;
-
         try {
             claims = jwtUtil.validateToken(token);
         } catch (Exception e) {
             return onError(exchange, "Invalid or Expired JWT Token", HttpStatus.UNAUTHORIZED);
         }
 
-        // 🔥 ROLE EXTRACT
+        // ROLE EXTRACT
         String role = claims.get("role", String.class);
 
         // CUSTOMER rules
@@ -57,25 +63,46 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
         }
 
-        // ADMIN only routes (future)
+        // ADMIN only routes
         if (path.startsWith("/admin") && !"ADMIN".equals(role)) {
             return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
         }
 
-        // Products — CUSTOMER read kar sakta hai, ADMIN sab kuch
+        // Products
         if (path.startsWith("/products") && request.getMethod().name().equals("GET")) {
-            // CUSTOMER + ADMIN allow
             if (!"CUSTOMER".equals(role) && !"ADMIN".equals(role)) {
                 return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
             }
         } else if (path.startsWith("/products") || path.startsWith("/stock")) {
-            // POST/PUT/DELETE sirf ADMIN
             if (!"ADMIN".equals(role)) {
                 return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
             }
         }
 
+        // Tracking routes
+        if (path.matches("/tracking/\\d+/history")) {
+            if (!"ADMIN".equals(role)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
+        } else if (path.equals("/tracking/update") || path.startsWith("/tracking/update")) {
+            if (!"DELIVERY_PARTNER".equals(role) && !"ADMIN".equals(role)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
+        } else if (path.startsWith("/tracking")) {
+            if (!"CUSTOMER".equals(role) && !"ADMIN".equals(role) && !"DELIVERY_PARTNER".equals(role)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
+        }
+
+        // Deliveries — ADMIN + DELIVERY_PARTNER
+        if (path.startsWith("/deliveries")) {
+            if (!"ADMIN".equals(role) && !"DELIVERY_PARTNER".equals(role)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
+        }
+
         return chain.filter(exchange);
+
     }
 
     private Mono<Void> onError(ServerWebExchange exchange, String err, HttpStatus status) {
