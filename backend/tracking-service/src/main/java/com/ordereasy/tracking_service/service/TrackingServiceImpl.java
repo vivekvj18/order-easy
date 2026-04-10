@@ -1,6 +1,7 @@
 package com.ordereasy.tracking_service.service;
 
 import com.ordereasy.tracking_service.entity.LocationLog;
+import com.ordereasy.tracking_service.exception.TrackingNotFoundException;
 import com.ordereasy.tracking_service.repository.LocationLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class TrackingServiceImpl implements TrackingService {
     public LocationLog getLatestLocation(Long orderId) {
         return locationLogRepository
                 .findTopByOrderIdOrderByTimestampDesc(orderId)
-                .orElseThrow(() -> new RuntimeException("Tracking not found for order: " + orderId));
+                .orElseThrow(() -> new TrackingNotFoundException("Tracking not found for order: " + orderId));
     }
 
     @Override
