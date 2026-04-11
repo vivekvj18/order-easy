@@ -7,5 +7,8 @@ import lombok.Setter;
 @Setter
 public class OrderStatusUpdatedEvent {
     private Long orderId;
-    private String status;
+    private Long userId;
+    private String userEmail;
+    private String oldStatus;
+    private String newStatus;
 }

@@ -14,6 +14,9 @@ public class CreateOrderRequest {
     @NotNull(message = "UserId cannot be null")
     private Long userId;
 
+    @NotNull(message = "User email cannot be null")
+    private String userEmail;
+
     @NotEmpty(message = "Order must have at least one item")
     @Valid
     private List<OrderItemRequest> items;

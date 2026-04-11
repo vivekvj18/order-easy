@@ -9,5 +9,7 @@ import java.util.List;
 @Setter
 public class OrderCancelledEvent {
     private Long orderId;
+    private Long userId;
+    private String userEmail;
     private List<OrderItemEvent> items;
 }

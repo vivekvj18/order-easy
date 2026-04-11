@@ -56,7 +56,7 @@ public class OrderService {
                 .userId(request.getUserId())
                 .totalAmount(totalAmount)
                 .status(OrderStatus.CREATED)
-                .deliverySlot(request.getDeliverySlot())   // ✅ NEW
+                .deliverySlot(request.getDeliverySlot())
                 .createdAt(LocalDateTime.now())
                 .items(items)
                 .build();
@@ -77,9 +77,10 @@ public class OrderService {
         OrderCreatedEvent event = new OrderCreatedEvent();
         event.setOrderId(savedOrder.getId());
         event.setUserId(savedOrder.getUserId());
+        event.setUserEmail(request.getUserEmail());
         event.setTotalAmount(savedOrder.getTotalAmount());
         event.setItems(itemEvents);
-        event.setDeliverySlot(savedOrder.getDeliverySlot());   // ✅ NEW
+        event.setDeliverySlot(savedOrder.getDeliverySlot());
 
         kafkaProducer.sendOrderCreatedEvent(event);
 
@@ -91,6 +92,7 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
+        String oldStatus = order.getStatus().name();
         order.setStatus(OrderStatus.CANCELLED);
         Order savedOrder = orderRepository.save(order);
 
@@ -105,6 +107,7 @@ public class OrderService {
 
         OrderCancelledEvent cancelEvent = new OrderCancelledEvent();
         cancelEvent.setOrderId(savedOrder.getId());
+        cancelEvent.setUserId(savedOrder.getUserId());
         cancelEvent.setItems(itemEvents);
         kafkaProducer.sendOrderCancelledEvent(cancelEvent);
 
@@ -116,12 +119,15 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
 
+        String oldStatus = order.getStatus().name();
         order.setStatus(status);
         Order savedOrder = orderRepository.save(order);
 
         OrderStatusUpdatedEvent event = new OrderStatusUpdatedEvent();
         event.setOrderId(savedOrder.getId());
-        event.setStatus(savedOrder.getStatus().name());
+        event.setUserId(savedOrder.getUserId());
+        event.setOldStatus(oldStatus);
+        event.setNewStatus(savedOrder.getStatus().name());
         kafkaProducer.sendOrderStatusUpdatedEvent(event);
 
         return mapToResponse(savedOrder);
@@ -195,7 +201,7 @@ public class OrderService {
                 .totalAmount(order.getTotalAmount())
                 .createdAt(order.getCreatedAt())
                 .items(itemResponses)
-                .deliverySlot(order.getDeliverySlot())   // ✅ ADD THIS LINE
+                .deliverySlot(order.getDeliverySlot())
                 .build();
     }
 }
