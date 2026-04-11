@@ -101,6 +101,15 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             }
         }
 
+        //Notification
+
+        if (path.startsWith("/notifications")) {
+            if (!role.equals("CUSTOMER") && !role.equals("ADMIN")) {
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
+            }
+        }
+
         return chain.filter(exchange);
 
     }
