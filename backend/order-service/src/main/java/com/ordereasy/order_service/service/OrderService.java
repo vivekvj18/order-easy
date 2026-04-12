@@ -54,6 +54,7 @@ public class OrderService {
 
         Order order = Order.builder()
                 .userId(request.getUserId())
+                .userEmail(request.getUserEmail())
                 .totalAmount(totalAmount)
                 .status(OrderStatus.CREATED)
                 .deliverySlot(request.getDeliverySlot())
@@ -108,6 +109,7 @@ public class OrderService {
         OrderCancelledEvent cancelEvent = new OrderCancelledEvent();
         cancelEvent.setOrderId(savedOrder.getId());
         cancelEvent.setUserId(savedOrder.getUserId());
+        cancelEvent.setUserEmail(savedOrder.getUserEmail());
         cancelEvent.setItems(itemEvents);
         kafkaProducer.sendOrderCancelledEvent(cancelEvent);
 
@@ -126,6 +128,7 @@ public class OrderService {
         OrderStatusUpdatedEvent event = new OrderStatusUpdatedEvent();
         event.setOrderId(savedOrder.getId());
         event.setUserId(savedOrder.getUserId());
+        event.setUserEmail(savedOrder.getUserEmail());
         event.setOldStatus(oldStatus);
         event.setNewStatus(savedOrder.getStatus().name());
         kafkaProducer.sendOrderStatusUpdatedEvent(event);
