@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Package, MapPin, RefreshCw, Clock } from 'lucide-react';
-import { getPartnerDeliveries } from '../../api/deliveryApi';
+import { getAllDeliveries } from '../../api/deliveryApi';
 import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
@@ -19,7 +19,7 @@ const MyDeliveriesPage = () => {
   const fetchDeliveries = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await getPartnerDeliveries(user?.id);
+      const res  = await getAllDeliveries();
       const data = Array.isArray(res.data) ? res.data :
                    Array.isArray(res.data?.data) ? res.data.data : [];
       setDeliveries(data);

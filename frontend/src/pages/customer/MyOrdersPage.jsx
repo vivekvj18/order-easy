@@ -22,7 +22,7 @@ const MyOrdersPage = () => {
     try {
       const res  = await getOrders({ userId: user?.id });
       const data = Array.isArray(res.data) ? res.data :
-                   Array.isArray(res.data?.content) ? res.data.content : [];
+                   Array.isArray(res.data?.orders) ? res.data.orders : [];
       setOrders(data);
     } catch (err) {
       toast.error(extractErrorMessage(err));

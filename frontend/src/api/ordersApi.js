@@ -13,4 +13,4 @@ export const updateOrderStatus = (id, status) =>
   api.put(`/orders/${id}/status`, null, { params: { status } });
 
 export const cancelOrder = (id) =>
-  api.delete(`/orders/${id}/cancel`);
+  api.put(`/orders/${id}/cancel`);

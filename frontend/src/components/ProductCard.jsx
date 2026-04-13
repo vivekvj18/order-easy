@@ -28,7 +28,7 @@ const ProductCard = ({ product }) => {
     toast.success(`${product.name} added to cart!`);
   };
 
-  const inStock = product.stockQuantity > 0;
+  const inStock = true;
 
   return (
     <div
@@ -73,9 +73,6 @@ const ProductCard = ({ product }) => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-brand-green font-bold text-base">{formatCurrency(product.price)}</p>
-            {inStock && (
-              <p className="text-[11px] text-gray-400">{product.stockQuantity} in stock</p>
-            )}
           </div>
           <button
             onClick={handleAdd}

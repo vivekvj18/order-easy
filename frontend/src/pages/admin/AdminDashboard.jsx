@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ShoppingCart, Package, Truck, TrendingUp, RefreshCw } from 'lucide-react';
 import { getOrders } from '../../api/ordersApi';
 import { getProducts } from '../../api/inventoryApi';
-import { getAllPartners } from '../../api/deliveryApi';
+import { getAllDeliveries } from '../../api/deliveryApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatCurrency } from '../../utils/formatters';
 
@@ -31,12 +31,12 @@ const AdminDashboard = () => {
         const [ordersRes, productsRes, partnersRes] = await Promise.allSettled([
           getOrders({ page: 0, size: 5, sortBy: 'createdAt', direction: 'desc' }),
           getProducts(),
-          getAllPartners(),
+          getAllDeliveries(),
         ]);
 
         const orders   = ordersRes.status === 'fulfilled'
           ? (Array.isArray(ordersRes.value.data) ? ordersRes.value.data :
-             ordersRes.value.data?.content || []) : [];
+             ordersRes.value.data?.orders || []) : [];
         const products = productsRes.status === 'fulfilled'
           ? (Array.isArray(productsRes.value.data) ? productsRes.value.data :
              productsRes.value.data?.content || []) : [];
@@ -126,7 +126,6 @@ const AdminDashboard = () => {
                       <span className={`badge ${
                         order.status === 'DELIVERED' ? 'badge-green' :
                         order.status === 'CANCELLED' ? 'badge-red'  :
-                        order.status === 'OUT_FOR_DELIVERY' ? 'badge-orange' :
                         order.status === 'CONFIRMED' ? 'badge-yellow' : 'badge-blue'
                       }`}>{order.status}</span>
                     </td>

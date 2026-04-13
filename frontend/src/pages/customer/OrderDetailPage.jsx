@@ -8,7 +8,7 @@ import { formatCurrency, formatDateTime, extractErrorMessage } from '../../utils
 import { ORDER_STATUSES, DELIVERY_SLOTS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 
-const STATUS_STEPS = ['CREATED', 'CONFIRMED', 'OUT_FOR_DELIVERY', 'DELIVERED'];
+const STATUS_STEPS = ['CREATED', 'CONFIRMED', 'DELIVERED'];
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -49,7 +49,7 @@ const OrderDetailPage = () => {
 
   const currentStep  = STATUS_STEPS.indexOf(order.status);
   const canCancel    = ['CREATED', 'CONFIRMED'].includes(order.status);
-  const canTrack     = order.status === 'OUT_FOR_DELIVERY';
+  const canTrack     = ['CONFIRMED', 'DELIVERED'].includes(order.status);
   const slotLabel    = DELIVERY_SLOTS.find((s) => s.value === order.deliverySlot)?.label || order.deliverySlot;
 
   return (

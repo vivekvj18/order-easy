@@ -35,7 +35,7 @@ const AllOrdersPage = () => {
         setOrders(data);
         setTotal(1);
       } else {
-        setOrders(data?.content || []);
+        setOrders(data?.orders || []);
         setTotal(data?.totalPages || 1);
       }
     } catch (err) {

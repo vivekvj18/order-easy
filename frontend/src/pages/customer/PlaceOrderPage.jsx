@@ -39,12 +39,10 @@ const PlaceOrderPage = () => {
         userEmail:    user?.email || 'user@example.com',
         items:        items.map((i) => ({
           productId:   i.product.id,
-          productName: i.product.name,
           quantity:    i.quantity,
           price:       i.product.price,
         })),
         deliverySlot:    slot || 'SLOT_10_MIN',
-        deliveryAddress: address,
         totalAmount:     grandTotal,
       };
       const res = await createOrder(payload);

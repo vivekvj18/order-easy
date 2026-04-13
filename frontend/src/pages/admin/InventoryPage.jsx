@@ -7,7 +7,7 @@ import { formatCurrency, extractErrorMessage } from '../../utils/formatters';
 import { PRODUCT_CATEGORIES } from '../../utils/constants';
 import toast from 'react-hot-toast';
 
-const emptyForm = { name: '', description: '', price: '', stockQuantity: '', category: '' };
+const emptyForm = { name: '', description: '', price: '', category: '' };
 
 const InventoryPage = () => {
   const [products, setProducts]   = useState([]);
@@ -45,7 +45,6 @@ const InventoryPage = () => {
       name:          product.name || '',
       description:   product.description || '',
       price:         product.price ?? '',
-      stockQuantity: product.stockQuantity ?? '',
       category:      product.category || '',
     });
     setModal(true);
@@ -61,7 +60,6 @@ const InventoryPage = () => {
       const payload = {
         ...form,
         price:         parseFloat(form.price),
-        stockQuantity: parseInt(form.stockQuantity, 10) || 0,
       };
       if (editProduct) {
         await updateProduct(editProduct.id, payload);
@@ -106,7 +104,6 @@ const InventoryPage = () => {
                 <th>Name</th>
                 <th>Category</th>
                 <th>Price</th>
-                <th>Stock</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -133,11 +130,6 @@ const InventoryPage = () => {
                     )}
                   </td>
                   <td className="font-semibold text-brand-green">{formatCurrency(product.price)}</td>
-                  <td>
-                    <span className={`font-semibold ${product.stockQuantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
-                      {product.stockQuantity ?? 0}
-                    </span>
-                  </td>
                   <td>
                     <button
                       onClick={() => openEdit(product)}
@@ -203,18 +195,6 @@ const InventoryPage = () => {
                     className="form-input"
                     id="product-price-input"
                     placeholder="0.00"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Stock Qty</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={form.stockQuantity}
-                    onChange={(e) => setForm((f) => ({ ...f, stockQuantity: e.target.value }))}
-                    className="form-input"
-                    id="product-stock-input"
-                    placeholder="0"
                   />
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Users, RefreshCw } from 'lucide-react';
-import { getAllPartners } from '../../api/deliveryApi';
+// Backend currently doesn't have a specific endpoint for partners
 import { AvailabilityBadge } from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -14,7 +14,7 @@ const DeliveryPartnersPage = () => {
   const fetchPartners = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await getAllPartners();
+      const res  = { data: [] }; // Mocked response
       const data = Array.isArray(res.data) ? res.data :
                    Array.isArray(res.data?.data) ? res.data.data : [];
       setPartners(data);

@@ -9,14 +9,14 @@ import { extractErrorMessage } from '../../utils/formatters';
 import toast from 'react-hot-toast';
 
 const MOCK_PRODUCTS = [
-  { id: 1, name: 'Fresh Bananas', category: 'Fruits & Vegetables', price: 49, stockQuantity: 100, description: 'Sweet Cavendish bananas' },
-  { id: 2, name: 'Whole Milk 1L', category: 'Dairy & Eggs', price: 68, stockQuantity: 50, description: 'Full cream pasteurized milk' },
-  { id: 3, name: 'Amul Butter 100g', category: 'Dairy & Eggs', price: 55, stockQuantity: 80, description: 'Salted table butter' },
-  { id: 4, name: 'Aashirvaad Atta 5kg', category: 'Grocery', price: 260, stockQuantity: 30, description: 'Whole wheat flour' },
-  { id: 5, name: 'Lays Classic Salted', category: 'Snacks', price: 20, stockQuantity: 200, description: 'Crispy potato chips' },
-  { id: 6, name: 'Tropicana Orange 1L', category: 'Beverages', price: 110, stockQuantity: 60, description: '100% pure juice' },
-  { id: 7, name: 'Brown Eggs (6 pack)', category: 'Dairy & Eggs', price: 72, stockQuantity: 40, description: 'Free range farm eggs' },
-  { id: 8, name: 'Britannia Bread', category: 'Bakery', price: 44, stockQuantity: 90, description: 'Soft whole wheat loaf' },
+  { id: 1, name: 'Fresh Bananas', category: 'Fruits & Vegetables', price: 49, description: 'Sweet Cavendish bananas' },
+  { id: 2, name: 'Whole Milk 1L', category: 'Dairy & Eggs', price: 68, description: 'Full cream pasteurized milk' },
+  { id: 3, name: 'Amul Butter 100g', category: 'Dairy & Eggs', price: 55, description: 'Salted table butter' },
+  { id: 4, name: 'Aashirvaad Atta 5kg', category: 'Grocery', price: 260, description: 'Whole wheat flour' },
+  { id: 5, name: 'Lays Classic Salted', category: 'Snacks', price: 20, description: 'Crispy potato chips' },
+  { id: 6, name: 'Tropicana Orange 1L', category: 'Beverages', price: 110, description: '100% pure juice' },
+  { id: 7, name: 'Brown Eggs (6 pack)', category: 'Dairy & Eggs', price: 72, description: 'Free range farm eggs' },
+  { id: 8, name: 'Britannia Bread', category: 'Bakery', price: 44, description: 'Soft whole wheat loaf' },
 ];
 
 const HomePage = () => {

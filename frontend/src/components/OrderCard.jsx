@@ -7,7 +7,7 @@ const OrderCard = ({ order, showActions = false, onCancel, onTrack }) => {
   const navigate = useNavigate();
 
   const canCancel = ['CREATED', 'CONFIRMED'].includes(order.status);
-  const canTrack  = ['OUT_FOR_DELIVERY'].includes(order.status);
+  const canTrack  = ['CONFIRMED', 'DELIVERED'].includes(order.status);
 
   return (
     <div

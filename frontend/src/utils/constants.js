@@ -7,7 +7,6 @@ export const DELIVERY_SLOTS = [
 export const ORDER_STATUSES = [
   { value: 'CREATED',          label: 'Created',          color: 'blue'   },
   { value: 'CONFIRMED',        label: 'Confirmed',        color: 'yellow' },
-  { value: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', color: 'orange' },
   { value: 'DELIVERED',        label: 'Delivered',        color: 'green'  },
   { value: 'CANCELLED',        label: 'Cancelled',        color: 'red'    },
 ];

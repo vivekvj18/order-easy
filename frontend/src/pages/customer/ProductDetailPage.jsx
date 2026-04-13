@@ -33,7 +33,7 @@ const ProductDetailPage = () => {
   }, [id, navigate]);
 
   const cartItem = items.find((i) => i.product.id === product?.id);
-  const inStock  = product?.stockQuantity > 0;
+  const inStock  = true;
 
   const handleAdd = () => {
     addItem(product, qty);
@@ -97,8 +97,8 @@ const ProductDetailPage = () => {
             </div>
             <div className="flex items-center gap-2 ml-auto">
               <Package className="w-4 h-4 text-gray-400" />
-              <span className={`text-sm font-medium ${inStock ? 'text-green-600' : 'text-red-500'}`}>
-                {inStock ? `${product.stockQuantity} in stock` : 'Out of stock'}
+              <span className="text-sm font-medium text-green-600">
+                In Stock
               </span>
             </div>
           </div>
@@ -115,7 +115,7 @@ const ProductDetailPage = () => {
                 </button>
                 <span className="w-8 text-center font-semibold text-gray-800">{qty}</span>
                 <button
-                  onClick={() => setQty((q) => Math.min(product.stockQuantity, q + 1))}
+                  onClick={() => setQty((q) => Math.min(10, q + 1))}
                   className="w-7 h-7 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-brand-green font-bold text-lg transition-colors"
                 >
                   +
