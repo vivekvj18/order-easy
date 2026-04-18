@@ -1,5 +1,6 @@
 package com.ordereasy.order_service.exception;
 
+import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -43,6 +44,24 @@ public class GlobalExceptionHandler {
         response.put("timestamp", LocalDateTime.now().toString());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    // ✅ When Inventory Service is down or unreachable via Feign
+    @ExceptionHandler(FeignException.class)
+    public ResponseEntity<Map<String, String>> handleFeignException(FeignException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "Inventory service unavailable. Please try again.");
+        error.put("status", "SERVICE_UNAVAILABLE");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+    // ✅ When stock is unavailable or any business logic failure (e.g. from Feign response)
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        error.put("status", "BAD_REQUEST");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     // ✅ Catch-all for unexpected errors

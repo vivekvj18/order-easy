@@ -1,5 +1,7 @@
 package com.ordereasy.delivery_service.service;
 
+import com.ordereasy.delivery_service.dto.DeliveryAssignmentRequest;
+import com.ordereasy.delivery_service.dto.DeliveryAssignmentResponse;
 import com.ordereasy.delivery_service.dto.DeliveryResponse;
 import com.ordereasy.delivery_service.entity.Delivery;
 import com.ordereasy.delivery_service.entity.DeliveryPartner;
@@ -9,6 +11,7 @@ import com.ordereasy.delivery_service.event.OrderCreatedEvent;
 import com.ordereasy.delivery_service.repository.DeliveryPartnerRepository;
 import com.ordereasy.delivery_service.repository.DeliveryRepository;
 import com.ordereasy.delivery_service.strategy.DeliveryAssignmentStrategy;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,6 +19,7 @@ import java.util.List;
 
 @Service
 public class DeliveryService {
+
     private final DeliveryPartnerRepository partnerRepository;
     private final DeliveryRepository deliveryRepository;
     private final DeliveryAssignmentStrategy assignmentStrategy;
@@ -28,6 +32,52 @@ public class DeliveryService {
         this.assignmentStrategy = assignmentStrategy;
     }
 
+    /**
+     * Called by Order Service via Feign for synchronous partner assignment.
+     * Returns success: false if no partner is available (no exception thrown)
+     * so Order Service can handle gracefully and release reserved stock.
+     */
+    @Transactional
+    public DeliveryAssignmentResponse assignDeliveryForOrder(DeliveryAssignmentRequest request) {
+
+        List<DeliveryPartner> availablePartners = partnerRepository.findByStatus(PartnerStatus.AVAILABLE);
+
+        // Return soft failure — caller (Order Service) decides to throw and release stock
+        if (availablePartners == null || availablePartners.isEmpty()) {
+            return DeliveryAssignmentResponse.builder()
+                    .success(false)
+                    .message("No delivery partner available at the moment. Please try again shortly.")
+                    .build();
+        }
+
+        // FirstAvailableStrategy ignores the OrderCreatedEvent param (passing null is safe)
+        DeliveryPartner selectedPartner = assignmentStrategy.assign(availablePartners, null);
+
+        Delivery delivery = Delivery.builder()
+                .orderId(request.getOrderId())
+                .partner(selectedPartner)
+                .status(DeliveryStatus.ASSIGNED)
+                .assignedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        Delivery savedDelivery = deliveryRepository.save(delivery);
+
+        selectedPartner.setStatus(PartnerStatus.BUSY);
+        partnerRepository.save(selectedPartner);
+
+        return DeliveryAssignmentResponse.builder()
+                .success(true)
+                .message("Delivery partner assigned successfully")
+                .deliveryId(savedDelivery.getId())
+                .partnerId(selectedPartner.getId())
+                .build();
+    }
+
+    /**
+     * Legacy method — kept for any remaining Kafka-based assignment paths.
+     * Throws RuntimeException if no partner available (old behaviour preserved).
+     */
     public void assignDelivery(OrderCreatedEvent event) {
 
         List<DeliveryPartner> availablePartners =
@@ -48,7 +98,6 @@ public class DeliveryService {
 
         selectedPartner.setStatus(PartnerStatus.BUSY);
         partnerRepository.save(selectedPartner);
-
     }
 
     private DeliveryResponse mapToResponse(Delivery delivery) {
@@ -92,6 +141,4 @@ public class DeliveryService {
         Delivery updatedDelivery = deliveryRepository.save(delivery);
         return mapToResponse(updatedDelivery);
     }
-
-
 }

@@ -2,12 +2,15 @@ package com.ordereasy.inventory_service.service.impl;
 
 import com.ordereasy.inventory_service.dto.AddStockRequest;
 import com.ordereasy.inventory_service.dto.ReserveStockRequest;
+import com.ordereasy.inventory_service.dto.StockReservationRequest;
+import com.ordereasy.inventory_service.dto.StockReservationResponse;
 import com.ordereasy.inventory_service.dto.StockResponse;
 import com.ordereasy.inventory_service.entity.Stock;
 import com.ordereasy.inventory_service.exception.InsufficientStockException;
 import com.ordereasy.inventory_service.exception.StockNotFoundException;
 import com.ordereasy.inventory_service.repository.StockRepository;
 import com.ordereasy.inventory_service.service.StockService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +74,39 @@ public class StockServiceImpl implements StockService {
         stock.setUpdatedAt(LocalDateTime.now());
 
         return mapToResponse(stockRepository.save(stock));
+    }
+
+    @Override
+    @Transactional
+    public StockReservationResponse reserveStockBulk(StockReservationRequest request) {
+        // Phase 1 — validate ALL items before deducting anything (atomic check)
+        for (StockReservationRequest.StockItem item : request.getItems()) {
+            Stock stock = stockRepository.findByProductId(item.getProductId())
+                    .orElseThrow(() -> new StockNotFoundException(
+                            "Stock not found for product id: " + item.getProductId()));
+
+            int available = stock.getQuantity() - stock.getReservedQuantity();
+
+            if (available < item.getQuantity()) {
+                throw new InsufficientStockException(
+                        "Insufficient stock for product id: " + item.getProductId() +
+                        ". Available: " + available +
+                        ", Requested: " + item.getQuantity());
+            }
+        }
+
+        // Phase 2 — all validated, now deduct by incrementing reservedQuantity
+        for (StockReservationRequest.StockItem item : request.getItems()) {
+            Stock stock = stockRepository.findByProductId(item.getProductId()).get();
+            stock.setReservedQuantity(stock.getReservedQuantity() + item.getQuantity());
+            stock.setUpdatedAt(LocalDateTime.now());
+            stockRepository.save(stock);
+        }
+
+        return StockReservationResponse.builder()
+                .success(true)
+                .message("Stock reserved successfully")
+                .build();
     }
 
     private StockResponse mapToResponse(Stock stock) {
