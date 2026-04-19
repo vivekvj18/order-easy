@@ -1,8 +1,6 @@
 package com.ordereasy.order_service.service;
 
 import com.ordereasy.order_service.dto.CreateOrderRequest;
-import com.ordereasy.order_service.dto.DeliveryAssignmentRequest;
-import com.ordereasy.order_service.dto.DeliveryAssignmentResponse;
 import com.ordereasy.order_service.dto.OrderItemResponse;
 import com.ordereasy.order_service.dto.OrderResponse;
 import com.ordereasy.order_service.dto.PaginatedOrderResponse;
@@ -17,11 +15,9 @@ import com.ordereasy.order_service.event.OrderCreatedEvent;
 import com.ordereasy.order_service.event.OrderItemEvent;
 import com.ordereasy.order_service.event.OrderStatusUpdatedEvent;
 import com.ordereasy.order_service.exception.OrderNotFoundException;
-import com.ordereasy.order_service.feign.DeliveryFeignClient;
 import com.ordereasy.order_service.feign.InventoryFeignClient;
 import com.ordereasy.order_service.kafka.OrderKafkaProducer;
 import com.ordereasy.order_service.repository.OrderRepository;
-import feign.FeignException;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,16 +35,14 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderKafkaProducer kafkaProducer;
     private final InventoryFeignClient inventoryFeignClient;
-    private final DeliveryFeignClient deliveryFeignClient;
 
     public OrderService(OrderRepository orderRepository,
                         OrderKafkaProducer kafkaProducer,
-                        InventoryFeignClient inventoryFeignClient,
-                        DeliveryFeignClient deliveryFeignClient) {
+                        InventoryFeignClient inventoryFeignClient) {
         this.orderRepository = orderRepository;
         this.kafkaProducer = kafkaProducer;
         this.inventoryFeignClient = inventoryFeignClient;
-        this.deliveryFeignClient = deliveryFeignClient;
+
     }
 
     @Transactional
@@ -77,9 +71,7 @@ public class OrderService {
             );
         }
 
-        // ── Step 4: Save order as CREATED (inside transaction) ──────────────
-        //    We need a real orderId before calling Delivery Service.
-        //    If delivery fails, @Transactional rolls back this save automatically.
+        // ── Step 4: Build and save order as CONFIRMED ───────────────────────
         List<OrderItem> items = request.getItems().stream()
                 .map(itemReq -> OrderItem.builder()
                         .productId(itemReq.getProductId())
@@ -96,7 +88,7 @@ public class OrderService {
                 .userId(request.getUserId())
                 .userEmail(request.getUserEmail())
                 .totalAmount(totalAmount)
-                .status(OrderStatus.CREATED)    // temporary — updated to CONFIRMED below
+                .status(OrderStatus.CONFIRMED)
                 .deliverySlot(request.getDeliverySlot())
                 .createdAt(LocalDateTime.now())
                 .items(items)
@@ -105,38 +97,8 @@ public class OrderService {
         items.forEach(item -> item.setOrder(order));
         Order savedOrder = orderRepository.save(order);
 
-        // ── Step 5: Assign delivery partner synchronously via Feign ─────────
-        DeliveryAssignmentRequest deliveryRequest = DeliveryAssignmentRequest.builder()
-                .orderId(savedOrder.getId())
-                .userId(request.getUserId())
-                .build();
-
-        DeliveryAssignmentResponse deliveryResponse;
-        try {
-            deliveryResponse = deliveryFeignClient.assignDelivery(deliveryRequest);
-        } catch (FeignException e) {
-            // Delivery Service is down — release stock (best-effort), then re-throw
-            // @Transactional rolls back the order save automatically
-            releaseReservedStock(request);
-            throw e;    // rethrown so GlobalExceptionHandler returns 503
-        }
-
-        // ── Step 6: If no partner available, release stock and reject ────────
-        if (deliveryResponse == null || !deliveryResponse.isSuccess()) {
-            releaseReservedStock(request);
-            throw new RuntimeException(
-                    deliveryResponse != null
-                            ? deliveryResponse.getMessage()
-                            : "Delivery assignment failed"
-            );
-        }
-
-        // ── Step 7: Both stock and partner confirmed — mark order CONFIRMED ──
-        savedOrder.setStatus(OrderStatus.CONFIRMED);
-        Order confirmedOrder = orderRepository.save(savedOrder);
-
-        // ── Step 8: Publish order-created event (Notification/Tracking async) ─
-        List<OrderItemEvent> itemEvents = confirmedOrder.getItems().stream()
+        // ── Step 5: Publish order-created event (Delivery/Notification/Tracking) ─
+        List<OrderItemEvent> itemEvents = savedOrder.getItems().stream()
                 .map(item -> {
                     OrderItemEvent e = new OrderItemEvent();
                     e.setProductId(item.getProductId());
@@ -146,16 +108,20 @@ public class OrderService {
                 .collect(Collectors.toList());
 
         OrderCreatedEvent event = new OrderCreatedEvent();
-        event.setOrderId(confirmedOrder.getId());
-        event.setUserId(confirmedOrder.getUserId());
+        event.setOrderId(savedOrder.getId());
+        event.setUserId(savedOrder.getUserId());
         event.setUserEmail(request.getUserEmail());
-        event.setTotalAmount(confirmedOrder.getTotalAmount());
+        event.setTotalAmount(savedOrder.getTotalAmount());
         event.setItems(itemEvents);
-        event.setDeliverySlot(confirmedOrder.getDeliverySlot());
+        event.setDeliverySlot(savedOrder.getDeliverySlot());
 
-        kafkaProducer.sendOrderCreatedEvent(event);
+        try {
+            kafkaProducer.sendOrderCreatedEvent(event);
+        } catch (Exception e) {
+            System.err.println("Kafka event failed: " + e.getMessage());
+        }
 
-        return mapToResponse(confirmedOrder);
+        return mapToResponse(savedOrder);
     }
 
     /**
