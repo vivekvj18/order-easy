@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, Mail, Lock, User, ChevronDown, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Package, Mail, Lock, User, Phone, ChevronDown, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { register as registerApi } from '../../api/authApi';
 import { extractErrorMessage } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -14,20 +14,28 @@ const RegisterPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', confirmPassword: '', role: 'CUSTOMER',
+    name: '', email: '', phoneNumber: '', password: '', confirmPassword: '', role: 'CUSTOMER',
   });
-  const [showPass, setShowPass]   = useState(false);
-  const [loading, setLoading]     = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading]   = useState(false);
 
   const handleChange = (e) =>
     setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.password) {
+
+    if (!formData.name || !formData.email || !formData.phoneNumber || !formData.password) {
       toast.error('Please fill all required fields');
       return;
     }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      toast.error('Enter a valid 10-digit Indian mobile number (starting with 6, 7, 8, or 9)');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
@@ -36,9 +44,10 @@ const RegisterPage = () => {
       toast.error('Password must be at least 6 characters');
       return;
     }
+
     setLoading(true);
     try {
-      const { confirmPassword, ...payload } = formData;
+      const { confirmPassword, name, ...payload } = formData;
       await registerApi(payload);
       toast.success('Account created! Please login.');
       navigate('/login');
@@ -124,6 +133,26 @@ const RegisterPage = () => {
                     autoComplete="email"
                   />
                 </div>
+              </div>
+
+              {/* Phone Number */}
+              <div className="form-group">
+                <label htmlFor="phoneNumber" className="form-label">Phone number</label>
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    id="phoneNumber"
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleChange}
+                    placeholder="9876543210"
+                    className="form-input pl-10"
+                    maxLength={10}
+                    autoComplete="tel"
+                  />
+                </div>
+                <p className="text-xs text-gray-400 mt-1">10-digit Indian mobile number (no country code)</p>
               </div>
 
               {/* Password */}

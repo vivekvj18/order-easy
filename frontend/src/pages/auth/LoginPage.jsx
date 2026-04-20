@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Package, Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { login as loginApi } from '../../api/authApi';
 import { useAuth } from '../../context/AuthContext';
 import { ROLE_HOME_ROUTES } from '../../utils/constants';
@@ -11,19 +11,27 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [formData, setFormData]   = useState({ email: '', password: '' });
-  const [showPass, setShowPass]   = useState(false);
-  const [loading, setLoading]     = useState(false);
+  const [formData, setFormData] = useState({ phoneNumber: '', password: '' });
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading]   = useState(false);
 
   const handleChange = (e) =>
     setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
+
+    if (!formData.phoneNumber || !formData.password) {
       toast.error('Please fill all fields');
       return;
     }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(formData.phoneNumber)) {
+      toast.error('Enter a valid 10-digit Indian mobile number');
+      return;
+    }
+
     setLoading(true);
     try {
       const res  = await loginApi(formData);
@@ -90,25 +98,27 @@ const LoginPage = () => {
 
           <div className="card p-8 animate-slide-up">
             <h2 className="text-2xl font-bold text-gray-900 mb-1">Welcome back</h2>
-            <p className="text-gray-500 text-sm mb-8">Sign in to your account to continue</p>
+            <p className="text-gray-500 text-sm mb-8">Sign in with your phone number and password</p>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-              {/* Email */}
+              {/* Phone Number */}
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Email address</label>
+                <label htmlFor="phoneNumber" className="form-label">Phone number</label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
-                    id="email"
-                    type="email"
-                    name="email"
-                    value={formData.email}
+                    id="phoneNumber"
+                    type="tel"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
                     onChange={handleChange}
-                    placeholder="you@example.com"
+                    placeholder="9876543210"
                     className="form-input pl-10"
-                    autoComplete="email"
+                    maxLength={10}
+                    autoComplete="tel"
                   />
                 </div>
+                <p className="text-xs text-gray-400 mt-1">10-digit Indian mobile number</p>
               </div>
 
               {/* Password */}
