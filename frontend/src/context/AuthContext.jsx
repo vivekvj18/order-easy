@@ -52,10 +52,27 @@ export const AuthProvider = ({ children }) => {
         console.error("Failed to parse JWT", e);
       }
     } else {
-      // Fallback for object format
-      userObj  = data.user  || { id: data.userId, email: data.email, name: data.name };
-      userRole = data.role  || data.user?.role;
+      // Object format: handles { token, role } from OTP verify
+      // and { user, token } from any future format
       jwt      = data.token || data.accessToken;
+      userRole = data.role  || data.user?.role;
+
+      if (data.user) {
+        userObj = data.user;
+      } else if (jwt) {
+        // Parse JWT to extract user info (email is in 'sub' claim)
+        try {
+          const payload = JSON.parse(atob(jwt.split('.')[1]));
+          userRole = userRole || payload.role;
+          let genId = 1;
+          if (payload.sub) {
+            for (let i = 0; i < payload.sub.length; i++) genId += payload.sub.charCodeAt(i);
+          }
+          userObj = { id: genId, email: payload.sub, role: userRole, name: payload.sub?.split('@')[0] };
+        } catch (e) {
+          console.error('Failed to parse JWT payload', e);
+        }
+      }
     }
 
     if (!jwt) return null;
