@@ -8,6 +8,8 @@ import com.ordereasy.delivery_service.entity.DeliveryPartner;
 import com.ordereasy.delivery_service.entity.DeliveryStatus;
 import com.ordereasy.delivery_service.entity.PartnerStatus;
 import com.ordereasy.delivery_service.event.OrderCreatedEvent;
+import com.ordereasy.delivery_service.event.PaymentCompletedEvent;
+import com.ordereasy.delivery_service.event.OrderItemEvent;
 import com.ordereasy.delivery_service.repository.DeliveryPartnerRepository;
 import com.ordereasy.delivery_service.repository.DeliveryRepository;
 import com.ordereasy.delivery_service.strategy.DeliveryAssignmentStrategy;
@@ -98,6 +100,21 @@ public class DeliveryService {
 
         selectedPartner.setStatus(PartnerStatus.BUSY);
         partnerRepository.save(selectedPartner);
+    }
+
+    public void assignDeliveryFromPayment(PaymentCompletedEvent paymentEvent) {
+        // Map PaymentCompletedEvent to OrderCreatedEvent for strategy compatibility
+        OrderCreatedEvent orderEvent = new OrderCreatedEvent();
+        orderEvent.setOrderId(paymentEvent.getOrderId());
+        orderEvent.setUserId(paymentEvent.getUserId());
+        orderEvent.setUserEmail(paymentEvent.getUserEmail());
+        orderEvent.setTotalAmount(paymentEvent.getAmount());
+        orderEvent.setItems(paymentEvent.getItems());
+        
+        // Handle delivery slot mapping if needed (paymentEvent has it as String)
+        // For now, we'll just proceed with basic assignment
+        
+        assignDelivery(orderEvent);
     }
 
     private DeliveryResponse mapToResponse(Delivery delivery) {

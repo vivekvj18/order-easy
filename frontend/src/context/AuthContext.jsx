@@ -36,18 +36,10 @@ export const AuthProvider = ({ children }) => {
     if (typeof data === 'string') {
       jwt = data;
       try {
-        const payloadStr = atob(jwt.split('.')[1]);
-        const payload = JSON.parse(payloadStr);
-        userRole = payload.role;
-        // The backend JWT uses 'sub' for email
-        // Generate a deterministic integer ID based on email since it's not present in token
-        let genId = 1;
-        if (payload.sub) {
-          for (let i = 0; i < payload.sub.length; i++) {
-            genId += payload.sub.charCodeAt(i);
-          }
-        }
-        userObj = { id: genId, email: payload.sub, role: payload.role, name: payload.sub.split('@')[0] };
+        const decoded = JSON.parse(atob(jwt.split('.')[1]));
+        userRole = decoded.role;
+        // Read the real DB user id directly from the JWT claim
+        userObj = { id: decoded.userId, email: decoded.sub, role: decoded.role, name: decoded.sub?.split('@')[0] };
       } catch (e) {
         console.error("Failed to parse JWT", e);
       }
@@ -60,15 +52,12 @@ export const AuthProvider = ({ children }) => {
       if (data.user) {
         userObj = data.user;
       } else if (jwt) {
-        // Parse JWT to extract user info (email is in 'sub' claim)
+        // Parse JWT to extract user info (email is in 'sub', real DB id is in 'userId')
         try {
-          const payload = JSON.parse(atob(jwt.split('.')[1]));
-          userRole = userRole || payload.role;
-          let genId = 1;
-          if (payload.sub) {
-            for (let i = 0; i < payload.sub.length; i++) genId += payload.sub.charCodeAt(i);
-          }
-          userObj = { id: genId, email: payload.sub, role: userRole, name: payload.sub?.split('@')[0] };
+          const decoded = JSON.parse(atob(jwt.split('.')[1]));
+          userRole = userRole || decoded.role;
+          // Read the real DB user id directly from the JWT claim
+          userObj = { id: decoded.userId, email: decoded.sub, role: userRole, name: decoded.sub?.split('@')[0] };
         } catch (e) {
           console.error('Failed to parse JWT payload', e);
         }

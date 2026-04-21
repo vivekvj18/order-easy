@@ -9,6 +9,9 @@ pkill -f "TrackingServiceApplication"
 pkill -f "NotificationServiceApplication"
 pkill -f "AuthServiceApplication"
 pkill -f "ApiGatewayApplication"
+pkill -f "ProductServiceApplication"
+pkill -f "CartServiceApplication"
+pkill -f "PaymentServiceApplication"
 
 cd infrastructure/kafka
 docker-compose down

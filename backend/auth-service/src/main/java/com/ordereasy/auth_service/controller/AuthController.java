@@ -67,7 +67,7 @@ public class AuthController {
         }
 
         User user = userService.loginUser(identifier, request.getPassword());
-        return jwtUtil.generateToken(user.getEmail(), user.getRole());
+        return jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
     }
 
     // ─── OTP LOGIN: STEP 1 — Send OTP ──────────────────────────────────────────
@@ -106,7 +106,7 @@ public class AuthController {
                 .orElseThrow(() -> new RuntimeException(
                         "User not found. Please register first."));
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
 
         return ResponseEntity.ok(Map.of(
                 "token", token,

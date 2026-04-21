@@ -15,8 +15,8 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    // 🔥 Generate JWT with email + role
-    public String generateToken(String email, String role) {
+    // 🔥 Generate JWT with email + role + userId (DB primary key)
+    public String generateToken(String email, String role, Long userId) {
 
         return Jwts.builder()
 
@@ -25,6 +25,9 @@ public class JwtUtil {
 
                 // 🔥 ROLE ADD (MOST IMPORTANT)
                 .claim("role", role)
+
+                // 🆔 Real DB user id — used by frontend to filter orders etc.
+                .claim("userId", userId)
 
                 // 🕒 Token creation time
                 .setIssuedAt(new Date())

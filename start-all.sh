@@ -14,8 +14,11 @@ sleep 5
 SERVICES=(
   "auth-service"
   "api-gateway"
+  "product-service"
+  "cart-service"
   "inventory-service"
   "order-service"
+  "payment-service"
   "delivery-service"
   "tracking-service"
   "notification-service"
@@ -35,12 +38,16 @@ echo ""
 echo "✅ All services started!"
 echo ""
 echo "Ports:"
-echo "  Auth Service      → http://localhost:8081"
-echo "  Order Service     → http://localhost:8083"
-echo "  API Gateway       → http://localhost:8084"
-echo "  Inventory Service → http://localhost:8086"
-echo "  Delivery Service  → http://localhost:8087"
-echo "  Tracking Service  → http://localhost:8088"
-echo "  Notification      → http://localhost:8089"
+echo "  Auth Service      → http://localhost:8081
+  Product Service   → http://localhost:8082
+  Order Service     → http://localhost:8083
+  API Gateway       → http://localhost:8084
+  Cart Service      → http://localhost:8085
+  Inventory Service → http://localhost:8086
+  Delivery Service  → http://localhost:8087
+  Tracking Service  → http://localhost:8088
+  Notification      → http://localhost:8089
+  Payment Service   → http://localhost:8090
+"
 echo ""
 echo "Logs: /tmp/<service-name>.log"

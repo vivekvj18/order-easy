@@ -46,13 +46,48 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
-    // ✅ When Inventory Service is down or unreachable via Feign
+    // ✅ When Inventory/Delivery Service returns a non-2xx response via Feign,
+    //    extract the real message from the response body so users get a meaningful reason
+    //    (e.g. "Insufficient stock" or "Stock not found for product id: X") instead of
+    //    the generic "Inventory service unavailable" that was silencing real errors.
     @ExceptionHandler(FeignException.class)
     public ResponseEntity<Map<String, String>> handleFeignException(FeignException ex) {
         Map<String, String> error = new HashMap<>();
-        error.put("error", "Inventory service unavailable. Please try again.");
+
+        // Try to pull the actual error body from the downstream service
+        String downstreamMessage = null;
+        try {
+            if (ex.responseBody().isPresent()) {
+                String body = new String(ex.responseBody().get().array());
+                // Body is typically {"message":"...","status":...}
+                // Simple extraction without a full JSON parser
+                if (body.contains("\"message\"")) {
+                    int start = body.indexOf("\"message\"") + 11; // skip past "message":
+                    // skip optional whitespace, colon, and opening quote
+                    while (start < body.length() && (body.charAt(start) == ' ' || body.charAt(start) == ':')) start++;
+                    if (start < body.length() && body.charAt(start) == '"') start++;
+                    int end = body.indexOf('"', start);
+                    if (end > start) {
+                        downstreamMessage = body.substring(start, end);
+                    }
+                }
+            }
+        } catch (Exception ignored) { }
+
+        if (downstreamMessage != null && !downstreamMessage.isBlank()) {
+            error.put("error", downstreamMessage);
+        } else {
+            error.put("error", "Inventory service unavailable. Please try again.");
+        }
         error.put("status", "SERVICE_UNAVAILABLE");
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+
+        // Mirror 4xx status codes from downstream (e.g. 404 = stock not found, 400 = bad request)
+        // Only use 503 for genuine connectivity failures
+        HttpStatus status = (ex.status() >= 400 && ex.status() < 500)
+                ? HttpStatus.valueOf(ex.status())
+                : HttpStatus.SERVICE_UNAVAILABLE;
+
+        return ResponseEntity.status(status).body(error);
     }
 
     // ✅ When stock is unavailable or any business logic failure (e.g. from Feign response)

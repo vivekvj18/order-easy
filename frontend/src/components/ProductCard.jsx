@@ -13,9 +13,13 @@ const getProductImage = (id, name) => {
 };
 
 const ProductCard = ({ product }) => {
-  const { addItem } = useCart();
+  const { addItem, items, updateQuantity } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Derive quantity directly from cart context — no extra state
+  const cartItem = items.find((i) => i.product.id === product.id);
+  const quantity = cartItem ? cartItem.quantity : 0;
 
   const handleAdd = (e) => {
     e.stopPropagation();
@@ -26,6 +30,17 @@ const ProductCard = ({ product }) => {
     }
     addItem(product);
     toast.success(`${product.name} added to cart!`);
+  };
+
+  const handleIncrease = (e) => {
+    e.stopPropagation();
+    updateQuantity(product.id, quantity + 1);
+  };
+
+  const handleDecrease = (e) => {
+    e.stopPropagation();
+    // updateQuantity removes the item automatically when quantity reaches 0
+    updateQuantity(product.id, quantity - 1);
   };
 
   const inStock = true;
@@ -74,14 +89,40 @@ const ProductCard = ({ product }) => {
           <div>
             <p className="text-brand-green font-bold text-base">{formatCurrency(product.price)}</p>
           </div>
-          <button
-            onClick={handleAdd}
-            disabled={!inStock}
-            className="btn-primary text-xs px-3 py-2 rounded-lg"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            Add
-          </button>
+
+          {quantity === 0 ? (
+            <button
+              onClick={handleAdd}
+              disabled={!inStock}
+              className="btn-primary text-xs px-3 py-2 rounded-lg"
+            >
+              <ShoppingCart className="w-3.5 h-3.5" />
+              Add
+            </button>
+          ) : (
+            <div
+              className="flex items-center gap-1 rounded-lg overflow-hidden border border-brand-green"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleDecrease}
+                className="px-2 py-1.5 text-brand-green font-bold text-sm hover:bg-brand-green hover:text-white transition-colors duration-150"
+                aria-label="Decrease quantity"
+              >
+                −
+              </button>
+              <span className="px-2 text-xs font-semibold text-gray-800 min-w-[1.25rem] text-center">
+                {quantity}
+              </span>
+              <button
+                onClick={handleIncrease}
+                className="px-2 py-1.5 text-brand-green font-bold text-sm hover:bg-brand-green hover:text-white transition-colors duration-150"
+                aria-label="Increase quantity"
+              >
+                +
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -35,21 +35,29 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderKafkaProducer kafkaProducer;
     private final InventoryFeignClient inventoryFeignClient;
+    private final CartFeignClient cartFeignClient;
 
     public OrderService(OrderRepository orderRepository,
                         OrderKafkaProducer kafkaProducer,
-                        InventoryFeignClient inventoryFeignClient) {
+                        InventoryFeignClient inventoryFeignClient,
+                        CartFeignClient cartFeignClient) {
         this.orderRepository = orderRepository;
         this.kafkaProducer = kafkaProducer;
         this.inventoryFeignClient = inventoryFeignClient;
-
+        this.cartFeignClient = cartFeignClient;
     }
 
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
 
+        // ── Step 0: Fetch items from Cart Service ──────────────────────────
+        CartResponse cart = cartFeignClient.getCart(request.getUserId());
+        if (cart == null || cart.getItems().isEmpty()) {
+            throw new RuntimeException("Cart is empty");
+        }
+
         // ── Step 1: Build bulk stock reservation request ────────────────────
-        List<StockReservationRequest.StockItem> stockItems = request.getItems()
+        List<StockReservationRequest.StockItem> stockItems = cart.getItems()
                 .stream()
                 .map(item -> StockReservationRequest.StockItem.builder()
                         .productId(item.getProductId())
@@ -72,22 +80,18 @@ public class OrderService {
         }
 
         // ── Step 4: Build and save order as CONFIRMED ───────────────────────
-        List<OrderItem> items = request.getItems().stream()
-                .map(itemReq -> OrderItem.builder()
-                        .productId(itemReq.getProductId())
-                        .quantity(itemReq.getQuantity())
-                        .price(itemReq.getPrice())
+        List<OrderItem> items = cart.getItems().stream()
+                .map(item -> OrderItem.builder()
+                        .productId(item.getProductId())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
                         .build())
                 .collect(Collectors.toList());
-
-        double totalAmount = items.stream()
-                .mapToDouble(item -> item.getPrice() * item.getQuantity())
-                .sum();
 
         Order order = Order.builder()
                 .userId(request.getUserId())
                 .userEmail(request.getUserEmail())
-                .totalAmount(totalAmount)
+                .totalAmount(cart.getTotalAmount())
                 .status(OrderStatus.CONFIRMED)
                 .deliverySlot(request.getDeliverySlot())
                 .createdAt(LocalDateTime.now())
@@ -119,6 +123,13 @@ public class OrderService {
             kafkaProducer.sendOrderCreatedEvent(event);
         } catch (Exception e) {
             System.err.println("Kafka event failed: " + e.getMessage());
+        }
+
+        // ── Step 6: Clear Cart ──────────────────────────────────────────────
+        try {
+            cartFeignClient.clearCart(request.getUserId());
+        } catch (Exception e) {
+            System.err.println("Warning: Failed to clear cart after order placement: " + e.getMessage());
         }
 
         return mapToResponse(savedOrder);

@@ -17,12 +17,15 @@ check_service() {
 }
 
 check_service "Auth Service"      8081
+check_service "Product Service"   8082
 check_service "Order Service"     8083
 check_service "API Gateway"       8084
+check_service "Cart Service"      8085
 check_service "Inventory Service" 8086
 check_service "Delivery Service"  8087
 check_service "Tracking Service"  8088
 check_service "Notification"      8089
+check_service "Payment Service"   8090
 
 echo ""
 echo "Kafka:"
