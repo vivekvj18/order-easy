@@ -16,6 +16,8 @@ import com.ordereasy.order_service.event.OrderItemEvent;
 import com.ordereasy.order_service.event.OrderStatusUpdatedEvent;
 import com.ordereasy.order_service.exception.OrderNotFoundException;
 import com.ordereasy.order_service.feign.InventoryFeignClient;
+import com.ordereasy.order_service.feign.CartFeignClient;
+import com.ordereasy.order_service.dto.CartResponse;
 import com.ordereasy.order_service.kafka.OrderKafkaProducer;
 import com.ordereasy.order_service.repository.OrderRepository;
 import jakarta.transaction.Transactional;

@@ -1,0 +1,10 @@
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/CartServiceApplication.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/controller/CartController.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/dto/CartItemRequest.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/dto/CartItemResponse.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/dto/CartResponse.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/dto/ProductResponse.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/entity/CartItem.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/feign/ProductFeignClient.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/repository/CartRepository.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/main/java/com/ordereasy/cart_service/service/CartService.java

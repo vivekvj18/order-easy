@@ -1,0 +1,10 @@
+com/ordereasy/product_service/dto/CreateProductRequest.class
+com/ordereasy/product_service/dto/ProductResponse$ProductResponseBuilder.class
+com/ordereasy/product_service/dto/CreateProductRequest$CreateProductRequestBuilder.class
+com/ordereasy/product_service/ProductServiceApplication.class
+com/ordereasy/product_service/entity/Product.class
+com/ordereasy/product_service/dto/ProductResponse.class
+com/ordereasy/product_service/repository/ProductRepository.class
+com/ordereasy/product_service/service/ProductService.class
+com/ordereasy/product_service/controller/ProductController.class
+com/ordereasy/product_service/entity/Product$ProductBuilder.class
