@@ -23,4 +23,7 @@ public class CreateOrderRequest {
 
     @NotNull(message = "Delivery slot cannot be null")
     private DeliverySlot deliverySlot;
+
+    @NotNull(message = "Total amount cannot be null")
+    private Double totalAmount;
 }

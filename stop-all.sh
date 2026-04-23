@@ -12,6 +12,7 @@ pkill -f "ApiGatewayApplication"
 pkill -f "ProductServiceApplication"
 pkill -f "CartServiceApplication"
 pkill -f "PaymentServiceApplication"
+pkill -f "DiscoveryServerApplication"
 
 cd infrastructure/kafka
 docker-compose down

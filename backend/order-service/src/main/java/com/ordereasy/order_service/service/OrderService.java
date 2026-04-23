@@ -52,15 +52,38 @@ public class OrderService {
     @Transactional
     public OrderResponse createOrder(CreateOrderRequest request) {
 
-        // ── Step 0: Fetch items from Cart Service ──────────────────────────
-        CartResponse cart = cartFeignClient.getCart(request.getUserId());
-        if (cart == null || cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+        List<OrderItem> items;
+        Double totalAmount;
+
+        // ── Step 0: Resolve Items & Total (Request vs Cart Service) ─────────
+        if (request.getItems() != null && !request.getItems().isEmpty()) {
+            // Priority: Use items provided in the request (Frontend-driven cart)
+            items = request.getItems().stream()
+                    .map(item -> OrderItem.builder()
+                            .productId(item.getProductId())
+                            .quantity(item.getQuantity())
+                            .price(item.getPrice())
+                            .build())
+                    .collect(Collectors.toList());
+            totalAmount = request.getTotalAmount();
+        } else {
+            // Fallback: Fetch from Cart Service (Backend-driven cart)
+            CartResponse cart = cartFeignClient.getCart(request.getUserId());
+            if (cart == null || cart.getItems().isEmpty()) {
+                throw new RuntimeException("Cart is empty");
+            }
+            items = cart.getItems().stream()
+                    .map(item -> OrderItem.builder()
+                            .productId(item.getProductId())
+                            .quantity(item.getQuantity())
+                            .price(item.getPrice())
+                            .build())
+                    .collect(Collectors.toList());
+            totalAmount = cart.getTotalAmount();
         }
 
         // ── Step 1: Build bulk stock reservation request ────────────────────
-        List<StockReservationRequest.StockItem> stockItems = cart.getItems()
-                .stream()
+        List<StockReservationRequest.StockItem> stockItems = items.stream()
                 .map(item -> StockReservationRequest.StockItem.builder()
                         .productId(item.getProductId())
                         .quantity(item.getQuantity())
@@ -82,18 +105,10 @@ public class OrderService {
         }
 
         // ── Step 4: Build and save order as CONFIRMED ───────────────────────
-        List<OrderItem> items = cart.getItems().stream()
-                .map(item -> OrderItem.builder()
-                        .productId(item.getProductId())
-                        .quantity(item.getQuantity())
-                        .price(item.getPrice())
-                        .build())
-                .collect(Collectors.toList());
-
         Order order = Order.builder()
                 .userId(request.getUserId())
                 .userEmail(request.getUserEmail())
-                .totalAmount(cart.getTotalAmount())
+                .totalAmount(totalAmount)
                 .status(OrderStatus.CONFIRMED)
                 .deliverySlot(request.getDeliverySlot())
                 .createdAt(LocalDateTime.now())
@@ -103,7 +118,7 @@ public class OrderService {
         items.forEach(item -> item.setOrder(order));
         Order savedOrder = orderRepository.save(order);
 
-        // ── Step 5: Publish order-created event (Delivery/Notification/Tracking) ─
+        // ── Step 5: Publish order-created event ──────────────────────────────
         List<OrderItemEvent> itemEvents = savedOrder.getItems().stream()
                 .map(item -> {
                     OrderItemEvent e = new OrderItemEvent();
@@ -127,7 +142,7 @@ public class OrderService {
             System.err.println("Kafka event failed: " + e.getMessage());
         }
 
-        // ── Step 6: Clear Cart ──────────────────────────────────────────────
+        // ── Step 6: Clear Cart (Best effort) ────────────────────────────────
         try {
             cartFeignClient.clearCart(request.getUserId());
         } catch (Exception e) {

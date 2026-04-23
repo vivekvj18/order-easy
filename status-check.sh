@@ -16,6 +16,11 @@ check_service() {
   fi
 }
 
+echo "Infrastructure:"
+check_service "Eureka Server"    8761
+
+echo ""
+echo "Services:"
 check_service "Auth Service"      8081
 check_service "Product Service"   8082
 check_service "Order Service"     8083
@@ -28,7 +33,7 @@ check_service "Notification"      8089
 check_service "Payment Service"   8090
 
 echo ""
-echo "Kafka:"
+echo "External:"
 if docker ps | grep -q kafka; then
   echo "✅ Kafka — RUNNING"
 else

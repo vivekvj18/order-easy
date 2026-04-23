@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * - reserveStockBulk: reserves stock for all order items atomically (before saving order)
  * - releaseStock: releases a single item's reserved stock (best-effort rollback on delivery failure)
  */
-@FeignClient(name = "inventory-service", url = "${inventory.service.url}")
+@FeignClient(name = "inventory-service")
 public interface InventoryFeignClient {
 
     @PostMapping("/stock/reserve-bulk")

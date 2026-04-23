@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
  * The base URL is resolved from application.properties: delivery.service.url
  * Target endpoint: POST /deliveries/assign
  */
-@FeignClient(name = "delivery-service", url = "${delivery.service.url}")
+@FeignClient(name = "delivery-service")
 public interface DeliveryFeignClient {
 
     @PostMapping("/deliveries/assign")
