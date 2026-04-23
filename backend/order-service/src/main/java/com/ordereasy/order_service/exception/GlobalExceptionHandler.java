@@ -99,6 +99,34 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    // ✅ Handle Resilience4j Circuit Breaker (When circuit is OPEN)
+    @ExceptionHandler(io.github.resilience4j.circuitbreaker.CallNotPermittedException.class)
+    public ResponseEntity<Map<String, Object>> handleCallNotPermittedException(
+            io.github.resilience4j.circuitbreaker.CallNotPermittedException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "FAILED");
+        response.put("message", "Service is currently unavailable (Circuit Breaker OPEN)");
+        response.put("data", null);
+        response.put("timestamp", LocalDateTime.now().toString());
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
+    // ✅ Handle Fallback triggers (Custom Exception)
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Map<String, Object>> handleServiceUnavailableException(
+            ServiceUnavailableException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "FAILED");
+        response.put("message", ex.getMessage());
+        response.put("data", null);
+        response.put("timestamp", LocalDateTime.now().toString());
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(response);
+    }
+
     // ✅ Catch-all for unexpected errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {

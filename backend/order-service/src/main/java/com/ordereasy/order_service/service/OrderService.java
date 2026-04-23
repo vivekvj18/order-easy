@@ -36,17 +36,14 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final OrderKafkaProducer kafkaProducer;
-    private final InventoryFeignClient inventoryFeignClient;
-    private final CartFeignClient cartFeignClient;
+    private final ExternalServiceProxy externalServiceProxy;
 
     public OrderService(OrderRepository orderRepository,
                         OrderKafkaProducer kafkaProducer,
-                        InventoryFeignClient inventoryFeignClient,
-                        CartFeignClient cartFeignClient) {
+                        ExternalServiceProxy externalServiceProxy) {
         this.orderRepository = orderRepository;
         this.kafkaProducer = kafkaProducer;
-        this.inventoryFeignClient = inventoryFeignClient;
-        this.cartFeignClient = cartFeignClient;
+        this.externalServiceProxy = externalServiceProxy;
     }
 
     @Transactional
@@ -67,8 +64,8 @@ public class OrderService {
                     .collect(Collectors.toList());
             totalAmount = request.getTotalAmount();
         } else {
-            // Fallback: Fetch from Cart Service (Backend-driven cart)
-            CartResponse cart = cartFeignClient.getCart(request.getUserId());
+            // Fallback: Fetch from Cart Service (Protected by Circuit Breaker)
+            CartResponse cart = externalServiceProxy.getCart(request.getUserId());
             if (cart == null || cart.getItems().isEmpty()) {
                 throw new RuntimeException("Cart is empty");
             }
@@ -94,8 +91,8 @@ public class OrderService {
                 .items(stockItems)
                 .build();
 
-        // ── Step 2: Reserve stock synchronously via Feign ───────────────────
-        StockReservationResponse stockResponse = inventoryFeignClient.reserveStockBulk(stockRequest);
+        // ── Step 2: Reserve stock (Protected by Circuit Breaker) ──────────────
+        StockReservationResponse stockResponse = externalServiceProxy.reserveStockBulk(stockRequest);
 
         // ── Step 3: Reject immediately if stock unavailable ─────────────────
         if (stockResponse == null || !stockResponse.isSuccess()) {
@@ -144,7 +141,7 @@ public class OrderService {
 
         // ── Step 6: Clear Cart (Best effort) ────────────────────────────────
         try {
-            cartFeignClient.clearCart(request.getUserId());
+            externalServiceProxy.clearCart(request.getUserId());
         } catch (Exception e) {
             System.err.println("Warning: Failed to clear cart after order placement: " + e.getMessage());
         }
@@ -165,7 +162,7 @@ public class OrderService {
                         .productId(item.getProductId())
                         .quantity(item.getQuantity())
                         .build();
-                inventoryFeignClient.releaseStock(releaseRequest);
+                externalServiceProxy.releaseStock(releaseRequest);
             });
         } catch (Exception e) {
             System.err.println("Warning: Failed to release stock after delivery failure — " +

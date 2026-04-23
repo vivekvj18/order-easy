@@ -11,14 +11,20 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import com.ordereasy.cart_service.exception.ServiceUnavailableException;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CartService {
 
     private final CartRepository cartRepository;
     private final ProductFeignClient productFeignClient;
 
     @Transactional
+    @CircuitBreaker(name = "productServiceCB", fallbackMethod = "handleProductFallback")
     public CartResponse addItem(CartItemRequest request) {
         // Validate product exists via Feign
         ProductResponse product = productFeignClient.getProductById(request.getProductId());
@@ -38,6 +44,7 @@ public class CartService {
         return getCart(request.getUserId());
     }
 
+    @CircuitBreaker(name = "productServiceCB", fallbackMethod = "handleProductFallback")
     public CartResponse getCart(Long userId) {
         List<CartItem> items = cartRepository.findByUserId(userId);
         
@@ -75,5 +82,11 @@ public class CartService {
     @Transactional
     public void clearCart(Long userId) {
         cartRepository.deleteByUserId(userId);
+    }
+
+    // Fallback for Product Service failures
+    public CartResponse handleProductFallback(Exception e) {
+        log.warn("Product service failed, fail-fast with graceful degradation triggered. Error: {}", e.getMessage());
+        throw new ServiceUnavailableException("Product service unavailable");
     }
 }
