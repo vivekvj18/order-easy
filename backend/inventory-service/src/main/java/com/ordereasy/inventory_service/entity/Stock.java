@@ -25,4 +25,7 @@ public class Stock {
     private Integer reservedQuantity;
 
     private LocalDateTime updatedAt;
+
+    @Version                    // ← ADD THIS ANNOTATION
+    private Long version;       // ← ADD THIS FIELD
 }

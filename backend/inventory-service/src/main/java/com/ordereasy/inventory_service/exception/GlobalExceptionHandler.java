@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -47,6 +49,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(buildResponse("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+
+    // ADD THIS
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<Map<String, Object>> handleOptimisticLock(ObjectOptimisticLockingFailureException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(buildResponse("Stock was modified by another request. Please try again.", HttpStatus.CONFLICT));
     }
 
     private Map<String, Object> buildResponse(String message, HttpStatus status) {

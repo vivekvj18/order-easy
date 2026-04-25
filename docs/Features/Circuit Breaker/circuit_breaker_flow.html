@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit Breaker Flow — order-easy</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f8f6; color: #1a1a1a; padding: 24px 16px; }
+  .container { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 6px; color: #1a1a1a; }
+  .subtitle { text-align: center; font-size: 13px; color: #6b6b65; margin-bottom: 28px; }
+
+  /* WHAT IS CB */
+  .intro { background: #fff; border: 1.5px solid #d4d2c8; border-radius: 12px; padding: 18px 20px; margin-bottom: 28px; }
+  .intro h2 { font-size: 14px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; }
+  .intro p { font-size: 13px; color: #444; line-height: 1.75; }
+  .intro strong { color: #1a1a1a; }
+
+  /* STATES */
+  .states { display: flex; gap: 12px; margin-bottom: 28px; }
+  .state { flex: 1; border-radius: 10px; padding: 14px; text-align: center; border: 1.5px solid; }
+  .state .name { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .state .desc { font-size: 11px; line-height: 1.5; }
+  .s-closed { background: #eaf3de; border-color: #639922; }
+  .s-closed .name { color: #27500a; } .s-closed .desc { color: #3b6d11; }
+  .s-open { background: #fcebeb; border-color: #e24b4a; }
+  .s-open .name { color: #791f1f; } .s-open .desc { color: #a32d2d; }
+  .s-half { background: #faeeda; border-color: #ba7517; }
+  .s-half .name { color: #633806; } .s-half .desc { color: #854f0b; }
+
+  /* SECTION LABEL */
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #888; margin-bottom: 12px; }
+
+  /* FLOW STEPS */
+  .flow { display: flex; flex-direction: column; align-items: center; margin-bottom: 28px; }
+  .box { border-radius: 10px; padding: 12px 18px; border: 1.5px solid; width: 340px; text-align: center; }
+  .box .t { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .box .s { font-size: 11px; line-height: 1.55; }
+  .box .code { font-family: 'Courier New', monospace; font-size: 10px; background: rgba(0,0,0,0.05); border-radius: 6px; padding: 7px 10px; margin-top: 8px; text-align: left; line-height: 1.7; color: #333; }
+  .arrow { font-size: 20px; color: #aaa; margin: 4px 0; line-height: 1; }
+  .arrow-label { font-size: 10px; color: #999; font-style: italic; margin: -2px 0 4px; }
+
+  /* SPLIT */
+  .split { display: flex; gap: 16px; width: 100%; justify-content: center; margin: 8px 0; }
+  .split-side { display: flex; flex-direction: column; align-items: center; width: 340px; }
+  .split-tag { font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 10px; margin-bottom: 8px; }
+  .tag-g { background: #eaf3de; color: #27500a; }
+  .tag-r { background: #fcebeb; color: #791f1f; }
+  .box-sm { border-radius: 10px; padding: 10px 14px; border: 1.5px solid; width: 100%; text-align: center; }
+  .box-sm .t { font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .box-sm .s { font-size: 10px; line-height: 1.5; }
+
+  /* COLORS */
+  .gray { background: #f1efe8; border-color: #888780; }
+  .gray .t { color: #2c2c2a; } .gray .s { color: #5f5e5a; }
+  .blue { background: #e6f1fb; border-color: #378add; }
+  .blue .t { color: #0c447c; } .blue .s { color: #185fa5; }
+  .teal { background: #e1f5ee; border-color: #1d9e75; }
+  .teal .t { color: #085041; } .teal .s { color: #0f6e56; }
+  .purple { background: #eeedfe; border-color: #7f77dd; }
+  .purple .t { color: #3c3489; } .purple .s { color: #534ab7; }
+  .amber { background: #faeeda; border-color: #ba7517; }
+  .amber .t { color: #633806; } .amber .s { color: #854f0b; }
+  .green { background: #eaf3de; border-color: #639922; }
+  .green .t { color: #27500a; } .green .s { color: #3b6d11; }
+  .red { background: #fcebeb; border-color: #e24b4a; }
+  .red .t { color: #791f1f; } .red .s { color: #a32d2d; }
+
+  .divider { width: 100%; height: 1px; background: #d4d2c8; margin: 20px 0; }
+
+  /* STEPS TABLE */
+  .steps { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
+  .steps th { background: #2c2c2a; color: #fff; font-size: 12px; padding: 10px 14px; text-align: left; }
+  .steps td { font-size: 12px; padding: 10px 14px; border-bottom: 1px solid #e8e6e0; vertical-align: top; line-height: 1.6; }
+  .steps tr:nth-child(even) td { background: #f8f8f6; }
+  .steps td:first-child { font-weight: 700; color: #3c3489; white-space: nowrap; }
+  .steps td code { font-family: 'Courier New', monospace; font-size: 10px; background: #eeedfe; padding: 1px 5px; border-radius: 4px; color: #3c3489; }
+
+  /* NOTE */
+  .note { border: 1.5px dashed #b4b2a9; border-radius: 10px; padding: 14px 18px; font-size: 12px; color: #555; line-height: 1.75; background: #fff; }
+  .note strong { color: #1a1a1a; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Circuit Breaker Integration</h1>
+  <p class="subtitle">order-easy microservices project — complete guide &amp; flow</p>
+
+  <!-- WHAT IS CB -->
+  <div class="intro">
+    <h2>What is Circuit Breaker?</h2>
+    <p>
+      Imagine calling someone on the phone. They don't pick up. You try again. And again. You're stuck in a loop wasting time.<br><br>
+      <strong>Circuit Breaker says:</strong> "Stop trying after a certain number of failures. Give an instant fallback response. Try again after some time."<br><br>
+      In our project, <code style="font-family:monospace;font-size:12px;background:#eeedfe;padding:2px 6px;border-radius:4px;color:#3c3489">order-service</code> calls <code style="font-family:monospace;font-size:12px;background:#eeedfe;padding:2px 6px;border-radius:4px;color:#3c3489">inventory-service</code> via <strong>Feign (synchronous HTTP)</strong>. If inventory-service is down, Feign keeps waiting and the user hangs forever — or worse, the system crashes under load.<br><br>
+      Circuit Breaker makes it <strong>fail-fast</strong> — instant 503 JSON response instead of hanging. We used <strong>Resilience4j</strong> library for this.
+    </p>
+  </div>
+
+  <!-- 3 STATES -->
+  <div class="section-label">The 3 States — Core Concept</div>
+  <div class="states">
+    <div class="state s-closed">
+      <div class="name">CLOSED</div>
+      <div class="desc">Normal mode. All requests pass through. CB is just watching failure rate.</div>
+    </div>
+    <div class="state s-open">
+      <div class="name">OPEN</div>
+      <div class="desc">Failure threshold crossed. All requests blocked instantly. Fallback returned to client.</div>
+    </div>
+    <div class="state s-half">
+      <div class="name">HALF-OPEN</div>
+      <div class="desc">After 10s wait, allows 3 test calls. If pass → CLOSED. If fail → OPEN again.</div>
+    </div>
+  </div>
+
+  <!-- RUNTIME FLOW -->
+  <div class="section-label">Complete Runtime Flow — What Happens When User Places Order</div>
+  <div class="flow">
+
+    <div class="box gray">
+      <div class="t">1. Client (Browser / App)</div>
+      <div class="s">User places an order from the React frontend.</div>
+      <div class="code">POST http://localhost:8080/api/orders/place</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">HTTP request hits API Gateway on port 8080</div>
+
+    <div class="box blue">
+      <div class="t">2. API Gateway (port 8080)</div>
+      <div class="s">JWT filter checks token. Route matches <b>lb://order-service</b>. Asks Eureka for IP:port of order-service.</div>
+      <div class="code">lb://order-service → Eureka → 192.168.1.10:8083</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">Request forwarded to order-service</div>
+
+    <div class="box teal">
+      <div class="t">3. OrderService.createOrder()</div>
+      <div class="s">Business logic runs. Needs to verify stock availability before confirming order. Calls <b>ExternalServiceProxy</b> — NOT Feign directly.</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">proxy.checkInventory(productId) is called</div>
+
+    <div class="box teal">
+      <div class="t">4. ExternalServiceProxy (NEW class)</div>
+      <div class="s">Separate Spring Bean holding the @CircuitBreaker method. Needed because AOP cannot intercept self-calls within the same class.</div>
+      <div class="code">@CircuitBreaker(name="inventoryServiceCB",<br>  fallbackMethod="handleInventoryFallback")<br>public boolean checkInventory(Long productId) {<br>  return inventoryClient.checkStock(productId);<br>}</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">AOP intercepts the method call BEFORE it executes</div>
+
+    <div class="box purple">
+      <div class="t">5. AOP Intercepts → Circuit Breaker Checks State</div>
+      <div class="s">Spring AOP is the wrapper around the method. It applies CB logic first — reads failure count from sliding window of last 10 calls — then decides what happens next.</div>
+    </div>
+    <div class="arrow" style="color:#aaa">↓ ↓</div>
+
+    <!-- SPLIT -->
+    <div class="split">
+      <div class="split-side">
+        <div class="split-tag tag-g">✓ Circuit CLOSED (normal)</div>
+        <div class="box-sm green">
+          <div class="t">Feign call goes through</div>
+          <div class="s">inventoryClient.checkStock() executes normally</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box-sm green">
+          <div class="t">Inventory Service (port 8082)</div>
+          <div class="s">Returns: { available: true, qty: 10 }</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box-sm green">
+          <div class="t">Order saved → Kafka event published</div>
+          <div class="s">kafkaTemplate.send("order-placed", event)</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box-sm green">
+          <div class="t">✓ 201 OK returned to Client</div>
+          <div class="s">{ orderId: "ORD-8821", status: "CONFIRMED" }</div>
+        </div>
+      </div>
+
+      <div class="split-side">
+        <div class="split-tag tag-r">✗ Circuit OPEN (tripped)</div>
+        <div class="box-sm red">
+          <div class="t">Feign call BLOCKED instantly</div>
+          <div class="s">Never reaches inventory-service. Milliseconds response.</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box-sm red">
+          <div class="t">handleInventoryFallback() fires</div>
+          <div class="s">log.warn("fail-fast triggered") → throws ServiceUnavailableException</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box-sm red">
+          <div class="t">GlobalExceptionHandler catches it</div>
+          <div class="s">Builds structured 503 JSON response</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box-sm red">
+          <div class="t">✗ 503 returned to Client</div>
+          <div class="s">{ status:"FAILED", message:"Inventory unavailable" }</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="box amber">
+      <div class="t">When Does Circuit OPEN?</div>
+      <div class="s">failureRateThreshold = 50% → if 5 out of last 10 calls fail → circuit OPENS → blocks all traffic → waits 10 seconds</div>
+    </div>
+    <div class="arrow">↓</div>
+    <div class="arrow-label">after waitDurationInOpenState = 10 seconds...</div>
+
+    <div class="box amber">
+      <div class="t">HALF-OPEN State</div>
+      <div class="s">CB allows exactly 3 test calls (permittedNumberOfCallsInHalfOpenState=3). Testing if service recovered.</div>
+    </div>
+    <div class="arrow">↓</div>
+
+    <div class="split">
+      <div class="split-side">
+        <div class="split-tag tag-g">all 3 test calls pass</div>
+        <div class="box-sm green">
+          <div class="t">Circuit → CLOSED</div>
+          <div class="s">Normal traffic resumes. All Feign calls go through again.</div>
+        </div>
+      </div>
+      <div class="split-side">
+        <div class="split-tag tag-r">any test call fails</div>
+        <div class="box-sm red">
+          <div class="t">Circuit → OPEN again</div>
+          <div class="s">Wait another 10 seconds. Cycle repeats.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- INTEGRATION STEPS TABLE -->
+  <div class="section-label">Step-by-Step Integration — What We Did</div>
+  <table class="steps">
+    <tr><th>Step</th><th>File</th><th>What We Did</th></tr>
+    <tr>
+      <td>Step 1</td>
+      <td>pom.xml (order-service + cart-service)</td>
+      <td>Added <code>spring-cloud-starter-circuitbreaker-resilience4j</code> and <code>spring-boot-starter-aop</code>. AOP is required — without it, @CircuitBreaker annotation does nothing.</td>
+    </tr>
+    <tr>
+      <td>Step 2</td>
+      <td>application.properties</td>
+      <td>Added Feign timeouts: <code>connectTimeout=3000</code>, <code>readTimeout=5000</code>. Without timeouts, Feign waits forever on a dead service — timeouts make failures detectable.</td>
+    </tr>
+    <tr>
+      <td>Step 3</td>
+      <td>application.properties</td>
+      <td>Configured CB instances: <code>inventoryServiceCB</code>, <code>cartServiceCB</code> in order-service. <code>productServiceCB</code> in cart-service. Set failureRateThreshold=50%, slidingWindowSize=10, waitDuration=10s.</td>
+    </tr>
+    <tr>
+      <td>Step 4</td>
+      <td>ExternalServiceProxy.java (NEW)</td>
+      <td>Created a separate Spring Bean to hold @CircuitBreaker methods. Proxy pattern is needed because Spring AOP cannot intercept self-calls within the same class (self-invocation problem).</td>
+    </tr>
+    <tr>
+      <td>Step 5</td>
+      <td>OrderService.java + CartService.java</td>
+      <td>Updated to call ExternalServiceProxy instead of calling Feign clients directly. Business logic stays clean, CB logic is in the proxy.</td>
+    </tr>
+    <tr>
+      <td>Step 6</td>
+      <td>GlobalExceptionHandler.java (NEW)</td>
+      <td>Added handler for ServiceUnavailableException. Returns structured JSON with HTTP 503 status — production-grade response instead of raw exception.</td>
+    </tr>
+  </table>
+
+  <!-- WHY FEIGN NOT KAFKA -->
+  <div class="note">
+    <strong>Why Circuit Breaker on Feign only — NOT Kafka?</strong><br><br>
+    <strong>Feign = synchronous.</strong> order-service WAITS for inventory-service to respond. If it's down, the thread hangs indefinitely. Circuit Breaker prevents this with fail-fast behavior.<br><br>
+    <strong>Kafka = asynchronous.</strong> order-service publishes an event and moves on immediately — it does NOT wait. If delivery-service is down, the event stays in the Kafka topic and gets consumed when the service comes back up. Kafka handles resilience itself — no Circuit Breaker needed.<br><br>
+    <strong>Rule:</strong> Circuit Breaker only on synchronous Feign calls. Never on Kafka producers or consumers.
+  </div>
+
+</div>
+</body>
+</html>
