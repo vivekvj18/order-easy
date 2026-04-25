@@ -6,10 +6,12 @@ import com.ordereasy.tracking_service.entity.LocationLog;
 import com.ordereasy.tracking_service.service.TrackingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/tracking")
 @RequiredArgsConstructor
@@ -17,9 +19,11 @@ public class TrackingController {
 
     private final TrackingService trackingService;
 
-    // 🔹 Update location (Rider)
     @PostMapping("/update")
     public LocationResponse updateLocation(@Valid @RequestBody LocationUpdateRequest request) {
+        log.info("Location update received — orderId: {}, partnerId: {}, lat: {}, lng: {}",
+                request.getOrderId(), request.getPartnerId(),
+                request.getLatitude(), request.getLongitude());
 
         LocationLog locationLog = LocationLog.builder()
                 .orderId(request.getOrderId())
@@ -30,35 +34,38 @@ public class TrackingController {
                 .build();
 
         LocationLog saved = trackingService.updateLocation(locationLog);
-
+        log.info("Location saved successfully for orderId: {}", request.getOrderId());
         return mapToResponse(saved);
     }
 
-    // 🔹 Get latest location (Customer)
     @GetMapping("/{orderId}")
     public LocationResponse getLatestLocation(@PathVariable Long orderId) {
-        LocationLog log = trackingService.getLatestLocation(orderId);
-        return mapToResponse(log);
+        log.info("Fetching latest location for orderId: {}", orderId);
+        LocationLog log2 = trackingService.getLatestLocation(orderId);
+        log.info("Latest location for orderId: {} — lat: {}, lng: {}",
+                orderId, log2.getLatitude(), log2.getLongitude());
+        return mapToResponse(log2);
     }
 
-    // 🔹 Get full history (Admin)
     @GetMapping("/{orderId}/history")
     public List<LocationResponse> getHistory(@PathVariable Long orderId) {
-        return trackingService.getLocationHistory(orderId)
+        log.info("Fetching location history for orderId: {}", orderId);
+        List<LocationResponse> history = trackingService.getLocationHistory(orderId)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
+        log.info("Returning {} location records for orderId: {}", history.size(), orderId);
+        return history;
     }
 
-    // 🔹 Mapper method
-    private LocationResponse mapToResponse(LocationLog log) {
+    private LocationResponse mapToResponse(LocationLog locationLog) {
         return LocationResponse.builder()
-                .orderId(log.getOrderId())
-                .partnerId(log.getPartnerId())
-                .latitude(log.getLatitude())
-                .longitude(log.getLongitude())
-                .timestamp(log.getTimestamp())
-                .status(log.getStatus())
+                .orderId(locationLog.getOrderId())
+                .partnerId(locationLog.getPartnerId())
+                .latitude(locationLog.getLatitude())
+                .longitude(locationLog.getLongitude())
+                .timestamp(locationLog.getTimestamp())
+                .status(locationLog.getStatus())
                 .build();
     }
 }

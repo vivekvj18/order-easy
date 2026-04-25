@@ -110,10 +110,10 @@ public class DeliveryService {
         orderEvent.setUserEmail(paymentEvent.getUserEmail());
         orderEvent.setTotalAmount(paymentEvent.getAmount());
         orderEvent.setItems(paymentEvent.getItems());
-        
+
         // Handle delivery slot mapping if needed (paymentEvent has it as String)
         // For now, we'll just proceed with basic assignment
-        
+
         assignDelivery(orderEvent);
     }
 
