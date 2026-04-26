@@ -132,6 +132,8 @@ public class OrderService {
         event.setTotalAmount(savedOrder.getTotalAmount());
         event.setItems(itemEvents);
         event.setDeliverySlot(savedOrder.getDeliverySlot());
+        event.setDeliveryLatitude(request.getDeliveryLatitude());   // ← ADD THIS
+        event.setDeliveryLongitude(request.getDeliveryLongitude());
 
         try {
             kafkaProducer.sendOrderCreatedEvent(event);

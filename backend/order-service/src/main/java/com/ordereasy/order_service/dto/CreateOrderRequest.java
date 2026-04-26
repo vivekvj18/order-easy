@@ -26,4 +26,7 @@ public class CreateOrderRequest {
 
     @NotNull(message = "Total amount cannot be null")
     private Double totalAmount;
+
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 }

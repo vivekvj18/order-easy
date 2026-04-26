@@ -1,11 +1,16 @@
 package com.ordereasy.delivery_service.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ordereasy.delivery_service.event.OrderCreatedEvent;
 import com.ordereasy.delivery_service.event.PaymentCompletedEvent;
 import com.ordereasy.delivery_service.service.DeliveryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
+
+@Slf4j
 @Component
 public class OrderKafkaConsumer {
 
@@ -16,15 +21,13 @@ public class OrderKafkaConsumer {
         this.deliveryService = deliveryService;
     }
 
-    @KafkaListener(topics = "payment-completed", groupId = "delivery-group")
-    public void handlePaymentCompleted(String message) {
+    @KafkaListener(topics = "order-created", groupId = "delivery-group")
+    public void handleOrderCreated(OrderCreatedEvent event) {
         try {
-            PaymentCompletedEvent event = objectMapper.readValue(message, PaymentCompletedEvent.class);
-            if ("SUCCESS".equals(event.getStatus())) {
-                deliveryService.assignDeliveryFromPayment(event);
-            }
+            log.info("Received order-created event for orderId: {}", event.getOrderId());
+            deliveryService.assignDelivery(event);
         } catch (Exception e) {
-            System.err.println("Failed to process payment-completed event: " + e.getMessage());
+            log.error("Failed to process order-created event: {}", e.getMessage());
         }
     }
 }

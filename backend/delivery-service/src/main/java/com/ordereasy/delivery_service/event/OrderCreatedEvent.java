@@ -16,4 +16,7 @@ public class OrderCreatedEvent {
     private Double totalAmount;
     private List<OrderItemEvent> items;
     private DeliverySlot deliverySlot;
+
+    private Double deliveryLatitude;   // customer's delivery location
+    private Double deliveryLongitude;
 }

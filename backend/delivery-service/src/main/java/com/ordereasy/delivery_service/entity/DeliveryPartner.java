@@ -31,4 +31,8 @@ public class DeliveryPartner {
     private PartnerStatus status;
 
     private LocalDateTime createdAt;
+
+    // ← ADD THESE TWO FIELDS
+    private Double latitude;
+    private Double longitude;
 }

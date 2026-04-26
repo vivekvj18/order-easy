@@ -2,6 +2,7 @@ package com.ordereasy.delivery_service.strategy;
 
 import com.ordereasy.delivery_service.entity.DeliveryPartner;
 import com.ordereasy.delivery_service.event.OrderCreatedEvent;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
