@@ -1,5 +1,6 @@
 com/ordereasy/payment_service/dto/PaymentCompletedEvent$PaymentCompletedEventBuilder.class
 com/ordereasy/payment_service/dto/OrderItemEvent$OrderItemEventBuilder.class
+com/ordereasy/payment_service/dto/PaymentRequest.class
 com/ordereasy/payment_service/dto/OrderCreatedEvent.class
 com/ordereasy/payment_service/dto/OrderItemEvent.class
 com/ordereasy/payment_service/kafka/PaymentKafkaConsumer.class

@@ -2,6 +2,7 @@ package com.ordereasy.payment_service.service;
 
 import com.ordereasy.payment_service.dto.OrderCreatedEvent;
 import com.ordereasy.payment_service.dto.PaymentCompletedEvent;
+import com.ordereasy.payment_service.dto.PaymentRequest;
 import com.ordereasy.payment_service.entity.Payment;
 import com.ordereasy.payment_service.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
@@ -60,5 +61,44 @@ public class PaymentService {
 
         kafkaTemplate.send("payment-completed", completedEvent);
         log.info("Payment completed for order: {}, status: {}", event.getOrderId(), status);
+    }
+
+    @Transactional
+    public Payment initiatePayment(PaymentRequest request) {
+        log.info("Manual payment initiated for orderId: {}", request.getOrderId());
+
+        // Idempotency check
+        if (paymentRepository.findByOrderId(request.getOrderId()).isPresent()) {
+            log.warn("Payment already exists for orderId: {}", request.getOrderId());
+            return paymentRepository.findByOrderId(request.getOrderId()).get();
+        }
+
+        String transactionId = UUID.randomUUID().toString();
+
+        Payment payment = Payment.builder()
+                .orderId(request.getOrderId())
+                .userId(request.getUserId())
+                .amount(request.getAmount())
+                .status("SUCCESS")
+                .transactionId(transactionId)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Payment saved = paymentRepository.save(payment);
+
+        PaymentCompletedEvent completedEvent = PaymentCompletedEvent.builder()
+                .orderId(request.getOrderId())
+                .userId(request.getUserId())
+                .userEmail(request.getUserEmail())
+                .amount(request.getAmount())
+                .status("SUCCESS")
+                .transactionId(transactionId)
+                .build();
+
+        kafkaTemplate.send("payment-completed", completedEvent);
+        log.info("Payment SUCCESS for orderId: {}, txnId: {}",
+                request.getOrderId(), transactionId);
+
+        return saved;
     }
 }
