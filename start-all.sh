@@ -1,5 +1,9 @@
 #!/bin/bash
 echo "🚀 Starting OrderEasy..."
+# Load environment variables
+set -a
+source .env
+set +a
 # Step 1 — Infrastructure (Kafka)
 echo "Starting Kafka..."
 cd infrastructure/kafka
