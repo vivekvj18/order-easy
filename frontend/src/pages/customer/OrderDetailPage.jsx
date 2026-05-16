@@ -63,7 +63,7 @@ const OrderDetailPage = () => {
 
       <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Order #{order.id}</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Order #{order.orderId}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{formatDateTime(order.createdAt)}</p>
         </div>
         <StatusBadge status={order.status} />
@@ -144,12 +144,29 @@ const OrderDetailPage = () => {
 
           <div className="flex flex-col gap-2 mt-2">
             {canTrack && (
-              <button
-                onClick={() => navigate(`/track/${order.id}`)}
-                className="btn-secondary w-full"
-              >
-                <MapPin className="w-4 h-4" /> Track Order
-              </button>
+              <>
+                <button
+                  onClick={() => navigate(`/track/${order.orderId}`)}
+                  className="btn-primary w-full"
+                >
+                  <MapPin className="w-4 h-4" /> Track Order
+                </button>
+                {(order.deliveryLatitude && order.deliveryLongitude) && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${order.deliveryLatitude},${order.deliveryLongitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary w-full flex items-center justify-center gap-2"
+                  >
+                    <img 
+                      src="https://upload.wikimedia.org/wikipedia/commons/3/39/Google_Maps_icon_%282015-2020%29.svg" 
+                      alt="Google Maps" 
+                      className="w-4 h-4"
+                    />
+                    View on Google Maps
+                  </a>
+                )}
+              </>
             )}
             {canCancel && (
               <button onClick={handleCancel} className="btn-danger w-full">

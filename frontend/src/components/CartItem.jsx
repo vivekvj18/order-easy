@@ -1,6 +1,6 @@
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, getProductImage } from '../utils/formatters';
 
 const CartItem = ({ item }) => {
   const { updateQuantity, removeItem } = useCart();
@@ -11,7 +11,7 @@ const CartItem = ({ item }) => {
       {/* Image */}
       <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
         <img
-          src={`https://picsum.photos/seed/${(product.id || 0) * 10}/200/200`}
+          src={getProductImage(product.id, product.name)}
           alt={product.name}
           className="w-full h-full object-cover"
         />

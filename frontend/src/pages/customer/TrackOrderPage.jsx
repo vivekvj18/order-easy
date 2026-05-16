@@ -66,7 +66,7 @@ const TrackOrderPage = () => {
   const fetchOrderDetails = useCallback(async () => {
     try {
       const res = await getOrderById(orderId);
-      setOrder(res.data);
+      setOrder(res.data?.data || res.data);
     } catch (err) {
       toast.error('Could not fetch order details');
       navigate('/orders');
@@ -232,13 +232,18 @@ const TrackOrderPage = () => {
                 </div>
               </div>
               {latest && (
-                <div className="hidden sm:flex bg-white/90 backdrop-blur shadow-lg border border-white p-3 rounded-xl items-center gap-3">
-                  <Clock className="w-4 h-4 text-gray-400" />
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${latest.latitude},${latest.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-white/90 backdrop-blur shadow-lg border border-white p-3 rounded-xl flex items-center gap-3 hover:bg-white transition-colors group"
+                >
+                  <MapPin className="w-4 h-4 text-red-500 group-hover:scale-110 transition-transform" />
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Last Ping</p>
-                    <p className="text-sm font-bold text-gray-900">{new Date(latest.timestamp).toLocaleTimeString()}</p>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Google Maps</p>
+                    <p className="text-sm font-bold text-gray-900">Open Live View</p>
                   </div>
-                </div>
+                </a>
               )}
             </div>
           </div>

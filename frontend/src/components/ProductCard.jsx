@@ -2,15 +2,11 @@ import { ShoppingCart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { formatCurrency } from '../utils/formatters';
+import { formatCurrency, getProductImage } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
-// Deterministic image per product id
-const getProductImage = (id, name) => {
-  const seeds = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-  const seed = seeds[(id || 0) % seeds.length];
-  return `https://picsum.photos/seed/${seed}/400/300`;
-};
+// Get product image path from local assets
+
 
 const ProductCard = ({ product }) => {
   const { addItem, items, updateQuantity } = useCart();
@@ -51,12 +47,13 @@ const ProductCard = ({ product }) => {
       onClick={() => navigate(`/products/${product.id}`)}
     >
       {/* Image */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden bg-gray-200">
         <img
           src={getProductImage(product.id, product.name)}
           alt={product.name}
           className="w-full h-44 object-cover transition-transform duration-300 hover:scale-105"
           loading="lazy"
+          onError={(e) => { e.target.style.display = 'none'; }}
         />
         {!inStock && (
           <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center">

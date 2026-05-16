@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart, Star, Package, ChevronRight } from 'lucide-react';
 import { getProductById } from '../../api/inventoryApi';
 import { useCart } from '../../context/CartContext';
-import { formatCurrency } from '../../utils/formatters';
+import { formatCurrency, getProductImage } from '../../utils/formatters';
+import { MOCK_PRODUCTS } from '../../utils/constants';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
@@ -23,8 +24,14 @@ const ProductDetailPage = () => {
         const res = await getProductById(id);
         setProduct(res.data?.data || res.data);
       } catch {
-        toast.error('Product not found');
-        navigate('/home');
+        // Check mock data if not in backend
+        const mock = MOCK_PRODUCTS.find(p => p.id === parseInt(id));
+        if (mock) {
+          setProduct(mock);
+        } else {
+          toast.error('Product not found');
+          navigate('/home');
+        }
       } finally {
         setLoading(false);
       }
@@ -64,7 +71,7 @@ const ProductDetailPage = () => {
         {/* Image */}
         <div className="card overflow-hidden">
           <img
-            src={`https://picsum.photos/seed/${(product.id || 0) * 10}/800/600`}
+            src={getProductImage(product.id, product.name)}
             alt={product.name}
             className="w-full h-72 md:h-96 object-cover"
           />
