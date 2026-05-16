@@ -73,7 +73,9 @@ const LoginPage = () => {
       const data = res.data;               // { token, role }
       const role = login(data);
       toast.success('Login successful!');
-      navigate(ROLE_HOME_ROUTES[role] || '/home');
+      setTimeout(() => {
+        navigate(ROLE_HOME_ROUTES[role] || '/home');
+      }, 100);
     } catch (err) {
       toast.error(extractErrorMessage(err));
     } finally {

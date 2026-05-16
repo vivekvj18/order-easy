@@ -1,165 +1,316 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Clock, RefreshCw, Navigation } from 'lucide-react';
+import { ArrowLeft, MapPin, Clock, RefreshCw, Navigation, ShieldCheck } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
 import { getLatestTracking, getTrackingHistory } from '../../api/trackingApi';
+import { getOrderById } from '../../api/ordersApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatDateTime, extractErrorMessage } from '../../utils/formatters';
 import toast from 'react-hot-toast';
+
+// ─── Leaflet Icon Fix ────────────────────────────────────────────────────────
+// This is required because Vite/Webpack messes up the paths to Leaflet's default markers
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom markers for Rider and Destination
+const riderIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const destinationIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// ─── Map Controller ──────────────────────────────────────────────────────────
+// Helper component to auto-recenter the map when coordinates change
+const MapController = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) map.panTo(center);
+  }, [center, map]);
+  return null;
+};
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const BANGALORE_COORDS = [12.9716, 77.5946];
 
 const TrackOrderPage = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
 
+  const [order, setOrder]       = useState(null);
   const [latest, setLatest]     = useState(null);
   const [history, setHistory]   = useState([]);
   const [loading, setLoading]   = useState(true);
   const [autoRefresh, setAuto]  = useState(true);
 
+  // ─── Fetch Order Details (Once) ─────────────────────────────────────────────
+  const fetchOrderDetails = useCallback(async () => {
+    try {
+      const res = await getOrderById(orderId);
+      setOrder(res.data);
+    } catch (err) {
+      toast.error('Could not fetch order details');
+      navigate('/orders');
+    }
+  }, [orderId, navigate]);
+
+  // ─── Fetch Tracking Data (Polling) ──────────────────────────────────────────
   const fetchTracking = useCallback(async () => {
     try {
       const [latRes, histRes] = await Promise.allSettled([
         getLatestTracking(orderId),
         getTrackingHistory(orderId),
       ]);
+
       if (latRes.status === 'fulfilled') {
-        setLatest(latRes.value.data?.data || latRes.value.data);
+        const data = latRes.value.data?.data || latRes.value.data;
+        if (data && data.latitude) setLatest(data);
       }
+
       if (histRes.status === 'fulfilled') {
         const h = histRes.value.data;
-        setHistory(Array.isArray(h) ? h : Array.isArray(h?.data) ? h.data : []);
+        const historyData = Array.isArray(h) ? h : Array.isArray(h?.data) ? h.data : [];
+        setHistory(historyData);
       }
     } catch (err) {
-      // silently fail on tracking
+      console.error('Tracking fetch error:', err);
     } finally {
       setLoading(false);
     }
   }, [orderId]);
 
+  // Initial load
   useEffect(() => {
+    fetchOrderDetails();
     fetchTracking();
-  }, [fetchTracking]);
+  }, [fetchOrderDetails, fetchTracking]);
 
-  // Auto-refresh every 10s
+  // Auto-refresh logic
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh || (order && order.status === 'DELIVERED')) return;
+
     const interval = setInterval(fetchTracking, 10000);
     return () => clearInterval(interval);
-  }, [autoRefresh, fetchTracking]);
+  }, [autoRefresh, fetchTracking, order]);
+
+  // ─── Map Logic ──────────────────────────────────────────────────────────────
+  // Center Priority: Rider -> Destination -> Bangalore
+  const riderCoords = latest ? [latest.latitude, latest.longitude] : null;
+  const destCoords = (order?.deliveryLatitude && order?.deliveryLongitude) 
+    ? [order.deliveryLatitude, order.deliveryLongitude] 
+    : null;
+
+  const mapCenter = riderCoords || destCoords || BANGALORE_COORDS;
+  const polylinePoints = history.map(h => [h.latitude, h.longitude]);
+
+  // Add latest point to polyline if not already there
+  if (latest && (polylinePoints.length === 0 || 
+      polylinePoints[polylinePoints.length-1][0] !== latest.latitude)) {
+    polylinePoints.push([latest.latitude, latest.longitude]);
+  }
 
   return (
-    <div className="page-container max-w-2xl">
-      <button
-        onClick={() => navigate(`/orders/${orderId}`)}
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-green mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" /> Order Details
-      </button>
+    <div className="page-container max-w-4xl">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <button
+            onClick={() => navigate(`/orders/${orderId}`)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-brand-green mb-2 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Order
+          </button>
+          <h1 className="page-title mb-0 text-2xl">Track Order #{orderId}</h1>
+        </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="page-title mb-0">Track Order #{orderId}</h1>
-        <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
+        <div className="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+          <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer px-2">
             <input
               type="checkbox"
-              checked={autoRefresh}
+              checked={autoRefresh && order?.status !== 'DELIVERED'}
+              disabled={order?.status === 'DELIVERED'}
               onChange={(e) => setAuto(e.target.checked)}
               className="accent-brand-green w-4 h-4 rounded"
-              id="auto-refresh"
             />
-            Auto-refresh
+            <span className={order?.status === 'DELIVERED' ? 'opacity-50' : ''}>Auto-refresh</span>
           </label>
+          <div className="w-px h-4 bg-gray-200" />
           <button
             onClick={() => { setLoading(true); fetchTracking(); }}
-            className="btn-ghost"
+            className="p-2 hover:bg-gray-50 rounded-lg transition-colors text-gray-400 hover:text-brand-green"
+            title="Refresh now"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-24"><LoadingSpinner size="lg" /></div>
-      ) : (
-        <div className="flex flex-col gap-5">
-          {/* Latest location card */}
-          <div className="card p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center">
-                <Navigation className="w-5 h-5 text-brand-green animate-pulse" />
-              </div>
-              <div>
-                <h2 className="font-semibold text-gray-900">Current Location</h2>
-                <p className="text-xs text-gray-500">Updates every 10 seconds</p>
-              </div>
-            </div>
-
-            {latest ? (
-              <div className="flex flex-col gap-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500 mb-1">Latitude</p>
-                    <p className="text-base font-bold text-gray-900">{latest.latitude ?? '—'}</p>
-                  </div>
-                  <div className="p-3 bg-gray-50 rounded-xl">
-                    <p className="text-xs text-gray-500 mb-1">Longitude</p>
-                    <p className="text-base font-bold text-gray-900">{latest.longitude ?? '—'}</p>
-                  </div>
-                </div>
-
-                {latest.address && (
-                  <div className="flex items-start gap-2 p-3 bg-primary-50 rounded-xl">
-                    <MapPin className="w-4 h-4 text-brand-green flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-brand-green font-medium mb-0.5">Current address</p>
-                      <p className="text-sm text-gray-700">{latest.address}</p>
-                    </div>
-                  </div>
-                )}
-
-                {latest.timestamp && (
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <Clock className="w-3.5 h-3.5" />
-                    Last updated: {formatDateTime(latest.timestamp)}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <MapPin className="w-10 h-10 mx-auto mb-2 opacity-40" />
-                <p className="text-sm">No tracking data available yet.</p>
-                <p className="text-xs mt-1">Tracking begins once your order is out for delivery.</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Map & Status */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          {/* Map Container */}
+          <div className="card overflow-hidden border-0 shadow-xl relative" style={{ height: '420px' }}>
+            {loading && !latest && (
+              <div className="absolute inset-0 z-[1000] bg-white/60 backdrop-blur-[2px] flex items-center justify-center">
+                <LoadingSpinner size="lg" />
               </div>
             )}
+            
+            <MapContainer
+              center={mapCenter}
+              zoom={14}
+              style={{ height: '380px', width: '100%', borderRadius: '12px' }}
+              zoomControl={false}
+              className="z-10"
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              <MapController center={mapCenter} />
+
+              {/* Rider Marker */}
+              {riderCoords && (
+                <Marker position={riderCoords} icon={riderIcon}>
+                  <Popup>
+                    <div className="text-sm font-medium">
+                      <p className="text-brand-green font-bold">Delivery Partner</p>
+                      <p className="text-xs text-gray-500 mt-1">Last updated: {formatDateTime(latest.timestamp)}</p>
+                    </div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Destination Marker */}
+              {destCoords && (
+                <Marker position={destCoords} icon={destinationIcon}>
+                  <Popup>
+                    <div className="text-sm font-medium text-red-600">Your Delivery Location</div>
+                  </Popup>
+                </Marker>
+              )}
+
+              {/* Path Polyline */}
+              {polylinePoints.length > 1 && (
+                <Polyline 
+                  positions={polylinePoints} 
+                  color="#22c55e" 
+                  weight={4} 
+                  opacity={0.7}
+                  dashArray="5, 10"
+                />
+              )}
+            </MapContainer>
+
+            {/* Map Overlay Info */}
+            <div className="absolute bottom-4 left-4 right-4 z-20 flex gap-2">
+              <div className="flex-1 bg-white/90 backdrop-blur shadow-lg border border-white p-3 rounded-xl flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${order?.status === 'DELIVERED' ? 'bg-green-500' : 'bg-brand-green animate-pulse'}`} />
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Current Status</p>
+                  <p className="text-sm font-bold text-gray-900">{order?.status?.replace(/_/g, ' ') || 'UPDATING...'}</p>
+                </div>
+              </div>
+              {latest && (
+                <div className="hidden sm:flex bg-white/90 backdrop-blur shadow-lg border border-white p-3 rounded-xl items-center gap-3">
+                  <Clock className="w-4 h-4 text-gray-400" />
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Last Ping</p>
+                    <p className="text-sm font-bold text-gray-900">{new Date(latest.timestamp).toLocaleTimeString()}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* History */}
-          {history.length > 0 && (
-            <div className="card p-6">
-              <h2 className="section-title flex items-center gap-2">
-                <Clock className="w-4 h-4 text-brand-green" /> Location History
+          {/* Detailed Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="card p-4 bg-white border-0 shadow-sm">
+              <p className="text-xs text-gray-400 font-semibold mb-1 uppercase tracking-tight">Partner</p>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-blue-500" />
+                <p className="font-bold text-gray-800">Verified Rider</p>
+              </div>
+            </div>
+            <div className="card p-4 bg-white border-0 shadow-sm">
+              <p className="text-xs text-gray-400 font-semibold mb-1 uppercase tracking-tight">Distance</p>
+              <p className="font-bold text-gray-800">Calculating...</p>
+            </div>
+            <div className="card p-4 bg-white border-0 shadow-sm col-span-2 sm:col-span-1">
+              <p className="text-xs text-gray-400 font-semibold mb-1 uppercase tracking-tight">ETA</p>
+              <p className="font-bold text-brand-green">~ 8-12 mins</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: History List */}
+        <div className="flex flex-col gap-6">
+          <div className="card p-6 h-full border-0 shadow-lg bg-white">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-bold text-gray-900 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-brand-green" /> Live Timeline
               </h2>
-              <div className="flex flex-col gap-3">
-                {history.map((h, idx) => (
-                  <div key={idx} className="flex gap-4 items-start">
+              <span className="px-2 py-1 bg-primary-50 text-brand-green text-[10px] font-bold rounded-lg uppercase">
+                {history.length} Checkpoints
+              </span>
+            </div>
+
+            {history.length > 0 ? (
+              <div className="flex flex-col gap-0">
+                {history.slice(0, 8).map((h, idx) => (
+                  <div key={idx} className="flex gap-4 group">
                     <div className="flex flex-col items-center">
-                      <div className="w-2.5 h-2.5 rounded-full bg-brand-green mt-1 flex-shrink-0" />
-                      {idx < history.length - 1 && (
-                        <div className="w-px flex-1 bg-gray-200 mt-1 mb-1 min-h-[24px]" />
+                      <div className={`w-3 h-3 rounded-full border-2 border-white shadow-sm flex-shrink-0 z-10 ${idx === 0 ? 'bg-brand-green ring-4 ring-green-100' : 'bg-gray-300'}`} />
+                      {idx < Math.min(history.length, 8) - 1 && (
+                        <div className="w-0.5 flex-1 bg-gray-100 group-hover:bg-green-50 transition-colors" />
                       )}
                     </div>
-                    <div className="pb-3">
-                      <p className="text-sm text-gray-700">
-                        {h.address || `${h.latitude}, ${h.longitude}`}
+                    <div className="pb-6 pt-0.5">
+                      <p className={`text-sm font-medium ${idx === 0 ? 'text-gray-900' : 'text-gray-500'}`}>
+                        {h.address || `Coordinate: ${h.latitude.toFixed(4)}, ${h.longitude.toFixed(4)}`}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">{formatDateTime(h.timestamp)}</p>
+                      <p className="text-[10px] text-gray-400 mt-1 font-semibold uppercase tracking-wide">
+                        {new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
                     </div>
                   </div>
                 ))}
+                {history.length > 8 && (
+                  <p className="text-center text-xs text-gray-400 italic py-2">
+                    + {history.length - 8} more historical points
+                  </p>
+                )}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                <Navigation className="w-12 h-12 text-gray-300 mb-4" />
+                <p className="text-sm font-medium text-gray-500">Awaiting GPS signal...</p>
+                <p className="text-xs text-gray-400 mt-1">Timeline updates as the rider moves</p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

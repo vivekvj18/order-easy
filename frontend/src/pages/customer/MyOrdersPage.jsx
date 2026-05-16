@@ -79,7 +79,7 @@ const MyOrdersPage = () => {
         <div className="flex flex-col gap-3">
           {orders.map((order) => (
             <OrderCard
-              key={order.id}
+              key={order.orderId}
               order={order}
               showActions
               onCancel={handleCancel}

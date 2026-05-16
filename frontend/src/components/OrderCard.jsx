@@ -12,13 +12,13 @@ const OrderCard = ({ order, showActions = false, onCancel, onTrack }) => {
   return (
     <div
       className="card p-5 hover:shadow-card-hover transition-all duration-200 cursor-pointer animate-fade-in"
-      onClick={() => navigate(`/orders/${order.id}`)}
+      onClick={() => navigate(`/orders/${order.orderId}`)}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <p className="text-sm font-semibold text-gray-900">
-              Order #{order.id}
+              Order #{order.orderId}
             </p>
             <StatusBadge status={order.status} />
           </div>
@@ -43,7 +43,7 @@ const OrderCard = ({ order, showActions = false, onCancel, onTrack }) => {
         <div className="flex gap-2 mt-4 pt-4 border-t border-gray-50" onClick={(e) => e.stopPropagation()}>
           {canTrack && (
             <button
-              onClick={() => onTrack?.(order.id)}
+              onClick={() => onTrack?.(order.orderId)}
               className="btn-secondary text-xs px-3 py-2 flex-1"
             >
               <MapPin className="w-3.5 h-3.5" />
@@ -52,7 +52,7 @@ const OrderCard = ({ order, showActions = false, onCancel, onTrack }) => {
           )}
           {canCancel && (
             <button
-              onClick={() => onCancel?.(order.id)}
+              onClick={() => onCancel?.(order.orderId)}
               className="btn-danger text-xs px-3 py-2 flex-1"
             >
               Cancel
