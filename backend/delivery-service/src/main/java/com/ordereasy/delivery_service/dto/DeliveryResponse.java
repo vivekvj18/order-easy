@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class DeliveryResponse {
 
+    private Long deliveryId;
     private Long orderId;
     private Long partnerId;
     private String partnerName;

@@ -14,7 +14,6 @@ const RESEND_DELAY  = 30; // seconds before "Resend OTP" becomes active
 // ── Component ──────────────────────────────────────────────────────────────────
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   // 'phone' | 'otp' | 'password'
   const [step, setStep]             = useState('phone');
@@ -27,7 +26,6 @@ const LoginPage = () => {
   // Resend countdown
   const [resendTimer, setResendTimer] = useState(0);
   const timerRef = useRef(null);
-
   // Start countdown after OTP is sent
   const startResendTimer = () => {
     setResendTimer(RESEND_DELAY);
@@ -39,6 +37,14 @@ const LoginPage = () => {
       });
     }, 1000);
   };
+
+  // Auto-redirect if already logged in
+  const { isAuthenticated, role, login } = useAuth();
+  useEffect(() => {
+    if (isAuthenticated && role) {
+      navigate(ROLE_HOME_ROUTES[role] || '/home', { replace: true });
+    }
+  }, [isAuthenticated, role, navigate]);
 
   useEffect(() => () => clearInterval(timerRef.current), []);
 
@@ -160,7 +166,7 @@ const LoginPage = () => {
 
   // ─── STEP: phone ─────────────────────────────────────────────────────────────
   if (step === 'phone') return (
-    <div className="min-h-screen flex">
+    <div key="step-phone" className="min-h-screen flex">
       <LeftPanel />
       <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
@@ -229,7 +235,7 @@ const LoginPage = () => {
 
   // ─── STEP: otp ───────────────────────────────────────────────────────────────
   if (step === 'otp') return (
-    <div className="min-h-screen flex">
+    <div key="step-otp" className="min-h-screen flex">
       <LeftPanel />
       <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
@@ -311,8 +317,8 @@ const LoginPage = () => {
   );
 
   // ─── STEP: password (fallback) ───────────────────────────────────────────────
-  return (
-    <div className="min-h-screen flex">
+  if (step === 'password') return (
+    <div key="step-password" className="min-h-screen flex">
       <LeftPanel />
       <div className="flex-1 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
@@ -400,6 +406,8 @@ const LoginPage = () => {
       </div>
     </div>
   );
+
+  return null;
 };
 
 export default LoginPage;

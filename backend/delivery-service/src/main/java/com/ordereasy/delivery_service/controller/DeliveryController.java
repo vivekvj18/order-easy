@@ -38,6 +38,12 @@ public class DeliveryController {
         return response;
     }
 
+    @GetMapping("/partner/{partnerId}")
+    public List<DeliveryResponse> getDeliveriesByPartner(@PathVariable Long partnerId) {
+        log.info("Received request to fetch deliveries for partnerId: {}", partnerId);
+        return deliveryService.getDeliveriesByPartnerId(partnerId);
+    }
+
     @PatchMapping("/{deliveryId}/status")
     public DeliveryResponse updateDeliveryStatus(
             @PathVariable Long deliveryId,

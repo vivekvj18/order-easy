@@ -56,7 +56,7 @@ public class AuthController {
     // ─── PASSWORD LOGIN (fallback — kept unchanged) ─────────────────────────────
 
     @PostMapping("/auth/login")
-    public String login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
 
         String identifier = (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank())
                 ? request.getPhoneNumber()
@@ -67,7 +67,12 @@ public class AuthController {
         }
 
         User user = userService.loginUser(identifier, request.getPassword());
-        return jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole(), user.getId());
+
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "role",  user.getRole()
+        ));
     }
 
     // ─── OTP LOGIN: STEP 1 — Send OTP ──────────────────────────────────────────

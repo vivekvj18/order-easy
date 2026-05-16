@@ -117,8 +117,16 @@ public class DeliveryService {
         assignDelivery(orderEvent);
     }
 
+    public List<DeliveryResponse> getDeliveriesByPartnerId(Long partnerId) {
+        return deliveryRepository.findByPartnerId(partnerId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     private DeliveryResponse mapToResponse(Delivery delivery) {
         return DeliveryResponse.builder()
+                .deliveryId(delivery.getId())
                 .orderId(delivery.getOrderId())
                 .partnerId(delivery.getPartner().getId())
                 .partnerName(delivery.getPartner().getName())
@@ -141,6 +149,7 @@ public class DeliveryService {
         return mapToResponse(delivery);
     }
 
+    @Transactional
     public DeliveryResponse updateDeliveryStatus(Long deliveryId, DeliveryStatus status) {
 
         Delivery delivery = deliveryRepository.findById(deliveryId)

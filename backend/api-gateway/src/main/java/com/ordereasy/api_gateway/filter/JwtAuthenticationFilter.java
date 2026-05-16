@@ -32,6 +32,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
+        // 🟢 CORS Preflight bypass
+        if (request.getMethod().name().equals("OPTIONS")) {
+            return chain.filter(exchange);
+        }
+
         // Public routes skip
         if (path.startsWith("/auth")) {
             return chain.filter(exchange);
@@ -58,9 +63,12 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         // ROLE EXTRACT
         String role = claims.get("role", String.class);
 
-        // CUSTOMER rules
-        if (path.startsWith("/orders") && !"CUSTOMER".equals(role) && !"ADMIN".equals(role)) {
-            return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+        // CUSTOMER rules (Riders allowed to update status)
+        if (path.startsWith("/orders")) {
+            boolean isStatusUpdate = path.endsWith("/status") || path.contains("/status?");
+            if (!"CUSTOMER".equals(role) && !"ADMIN".equals(role) && !("DELIVERY_PARTNER".equals(role) && isStatusUpdate)) {
+                return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
+            }
         }
 
         // ADMIN only routes

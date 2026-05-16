@@ -82,13 +82,13 @@ const TrackOrderPage = () => {
       ]);
 
       if (latRes.status === 'fulfilled') {
-        const data = latRes.value.data?.data || latRes.value.data;
+        const data = latRes.value.data;
         if (data && data.latitude) setLatest(data);
       }
 
       if (histRes.status === 'fulfilled') {
         const h = histRes.value.data;
-        const historyData = Array.isArray(h) ? h : Array.isArray(h?.data) ? h.data : [];
+        const historyData = Array.isArray(h) ? h : [];
         setHistory(historyData);
       }
     } catch (err) {
@@ -108,7 +108,7 @@ const TrackOrderPage = () => {
   useEffect(() => {
     if (!autoRefresh || (order && order.status === 'DELIVERED')) return;
 
-    const interval = setInterval(fetchTracking, 10000);
+    const interval = setInterval(fetchTracking, 3000);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchTracking, order]);
 
