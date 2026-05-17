@@ -9,4 +9,7 @@ import java.util.List;
 public interface DeliveryPartnerRepository extends JpaRepository<DeliveryPartner, Long> {
 
     List<DeliveryPartner> findByStatus(PartnerStatus status);
+
+    long countByStatus(PartnerStatus status);
 }
+

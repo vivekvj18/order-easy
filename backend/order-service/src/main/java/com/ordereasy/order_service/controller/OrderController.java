@@ -3,6 +3,8 @@ package com.ordereasy.order_service.controller;
 import com.ordereasy.order_service.dto.CreateOrderRequest;
 import com.ordereasy.order_service.dto.OrderResponse;
 import com.ordereasy.order_service.dto.PaginatedOrderResponse;
+import com.ordereasy.order_service.dto.OrderAnalyticsSummaryResponse;
+import com.ordereasy.order_service.dto.OrderStatusBreakdownResponse;
 import com.ordereasy.order_service.entity.OrderStatus;
 import com.ordereasy.order_service.service.OrderService;
 import jakarta.validation.Valid;
@@ -92,5 +94,17 @@ public class OrderController {
         log.info("Returning page {}/{} with {} orders",
                  response.getCurrentPage(), response.getTotalPages(), response.getOrders().size());
         return response;
+    }
+
+    @GetMapping("/analytics/summary")
+    public OrderAnalyticsSummaryResponse getAnalyticsSummary() {
+        log.info("Received request for order analytics summary");
+        return orderService.getAnalyticsSummary();
+    }
+
+    @GetMapping("/analytics/status-breakdown")
+    public List<OrderStatusBreakdownResponse> getAnalyticsStatusBreakdown() {
+        log.info("Received request for order analytics status breakdown");
+        return orderService.getAnalyticsStatusBreakdown();
     }
 }

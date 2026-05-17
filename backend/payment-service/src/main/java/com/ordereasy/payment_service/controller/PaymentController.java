@@ -1,6 +1,7 @@
 package com.ordereasy.payment_service.controller;
 
 import com.ordereasy.payment_service.dto.PaymentRequest;
+import com.ordereasy.payment_service.dto.PaymentSummaryResponse;
 import com.ordereasy.payment_service.entity.Payment;
 import com.ordereasy.payment_service.repository.PaymentRepository;
 import com.ordereasy.payment_service.service.PaymentService;
@@ -62,5 +63,11 @@ public class PaymentController {
         log.info("Pay Now triggered for orderId: {}", orderId);
         Payment payment = paymentService.initiatePayment(request);
         return ResponseEntity.ok(payment);
+    }
+
+    @GetMapping("/analytics/summary")
+    public PaymentSummaryResponse getPaymentSummary() {
+        log.info("Received request for payment analytics summary");
+        return paymentService.getPaymentSummary();
     }
 }

@@ -5,6 +5,7 @@ import com.ordereasy.auth_service.dto.OtpRequest;
 import com.ordereasy.auth_service.dto.OtpVerifyRequest;
 import com.ordereasy.auth_service.dto.SignupRequest;
 import com.ordereasy.auth_service.dto.SignupResponse;
+import com.ordereasy.auth_service.dto.UserSummaryResponse;
 import com.ordereasy.auth_service.entity.User;
 import com.ordereasy.auth_service.repository.UserRepository;
 import com.ordereasy.auth_service.security.JwtUtil;
@@ -124,5 +125,22 @@ public class AuthController {
     @GetMapping("/test")
     public String test() {
         return "Protected API Working";
+    }
+
+    @GetMapping("/admin/users/summary")
+    public ResponseEntity<UserSummaryResponse> getUserSummary() {
+        long totalUsers = userRepository.count();
+        long customers = userRepository.countByRole("CUSTOMER");
+        long deliveryPartners = userRepository.countByRole("DELIVERY_PARTNER");
+        long admins = userRepository.countByRole("ADMIN");
+
+        UserSummaryResponse response = UserSummaryResponse.builder()
+                .totalUsers(totalUsers)
+                .customers(customers)
+                .deliveryPartners(deliveryPartners)
+                .admins(admins)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }

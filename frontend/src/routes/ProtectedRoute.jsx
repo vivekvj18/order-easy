@@ -19,6 +19,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(role)) {
+    if (location.pathname === '/admin/dashboard') {
+      return <Navigate to="/home" replace />;
+    }
     return <Navigate to="/unauthorized" replace />;
   }
 

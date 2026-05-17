@@ -4,6 +4,7 @@ import com.ordereasy.delivery_service.dto.DeliveryAssignmentRequest;
 import com.ordereasy.delivery_service.dto.DeliveryAssignmentResponse;
 import com.ordereasy.delivery_service.dto.DeliveryResponse;
 import com.ordereasy.delivery_service.dto.UpdateDeliveryStatusRequest;
+import com.ordereasy.delivery_service.dto.PartnerSummaryResponse;
 import com.ordereasy.delivery_service.service.DeliveryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -61,5 +62,11 @@ public class DeliveryController {
         DeliveryAssignmentResponse response = deliveryService.assignDeliveryForOrder(request);
         log.info("Delivery assigned successfully for orderId: {}", request.getOrderId());
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/analytics/partner-summary")
+    public PartnerSummaryResponse getPartnerSummary() {
+        log.info("Received request for delivery partner summary");
+        return deliveryService.getPartnerSummary();
     }
 }

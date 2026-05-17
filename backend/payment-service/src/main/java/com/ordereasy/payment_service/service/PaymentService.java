@@ -3,6 +3,7 @@ package com.ordereasy.payment_service.service;
 import com.ordereasy.payment_service.dto.OrderCreatedEvent;
 import com.ordereasy.payment_service.dto.PaymentCompletedEvent;
 import com.ordereasy.payment_service.dto.PaymentRequest;
+import com.ordereasy.payment_service.dto.PaymentSummaryResponse;
 import com.ordereasy.payment_service.entity.Payment;
 import com.ordereasy.payment_service.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
@@ -100,5 +101,19 @@ public class PaymentService {
                 request.getOrderId(), transactionId);
 
         return saved;
+    }
+
+    public PaymentSummaryResponse getPaymentSummary() {
+        long total = paymentRepository.count();
+        long success = paymentRepository.countByStatus("SUCCESS");
+        long failed = paymentRepository.countByStatus("FAILED");
+        Double collected = paymentRepository.sumTotalAmountCollected();
+
+        return PaymentSummaryResponse.builder()
+                .totalPayments(total)
+                .successPayments(success)
+                .failedPayments(failed)
+                .totalAmountCollected(collected != null ? collected : 0.0)
+                .build();
     }
 }

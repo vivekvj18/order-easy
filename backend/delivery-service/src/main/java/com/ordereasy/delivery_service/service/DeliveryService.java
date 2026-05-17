@@ -3,6 +3,7 @@ package com.ordereasy.delivery_service.service;
 import com.ordereasy.delivery_service.dto.DeliveryAssignmentRequest;
 import com.ordereasy.delivery_service.dto.DeliveryAssignmentResponse;
 import com.ordereasy.delivery_service.dto.DeliveryResponse;
+import com.ordereasy.delivery_service.dto.PartnerSummaryResponse;
 import com.ordereasy.delivery_service.entity.Delivery;
 import com.ordereasy.delivery_service.entity.DeliveryPartner;
 import com.ordereasy.delivery_service.entity.DeliveryStatus;
@@ -166,5 +167,17 @@ public class DeliveryService {
 
         Delivery updatedDelivery = deliveryRepository.save(delivery);
         return mapToResponse(updatedDelivery);
+    }
+
+    public PartnerSummaryResponse getPartnerSummary() {
+        long total = partnerRepository.count();
+        long available = partnerRepository.countByStatus(PartnerStatus.AVAILABLE);
+        long busy = partnerRepository.countByStatus(PartnerStatus.BUSY);
+
+        return PartnerSummaryResponse.builder()
+                .totalPartners(total)
+                .available(available)
+                .busy(busy)
+                .build();
     }
 }

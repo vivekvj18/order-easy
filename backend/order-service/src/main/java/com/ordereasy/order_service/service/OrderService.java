@@ -7,6 +7,8 @@ import com.ordereasy.order_service.dto.PaginatedOrderResponse;
 import com.ordereasy.order_service.dto.StockReleaseRequest;
 import com.ordereasy.order_service.dto.StockReservationRequest;
 import com.ordereasy.order_service.dto.StockReservationResponse;
+import com.ordereasy.order_service.dto.OrderAnalyticsSummaryResponse;
+import com.ordereasy.order_service.dto.OrderStatusBreakdownResponse;
 import com.ordereasy.order_service.entity.Order;
 import com.ordereasy.order_service.entity.OrderItem;
 import com.ordereasy.order_service.entity.OrderStatus;
@@ -290,5 +292,38 @@ public class OrderService {
                 .items(itemResponses)
                 .deliverySlot(order.getDeliverySlot())
                 .build();
+    }
+
+    public OrderAnalyticsSummaryResponse getAnalyticsSummary() {
+        LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        long totalOrders = orderRepository.count();
+        long confirmed = orderRepository.countByStatus(OrderStatus.CONFIRMED);
+        long delivered = orderRepository.countByStatus(OrderStatus.DELIVERED);
+        long cancelled = orderRepository.countByStatus(OrderStatus.CANCELLED);
+        Double totalRevenue = orderRepository.sumTotalRevenue();
+        long todayOrders = orderRepository.countTodayOrders(startOfDay);
+        Double todayRevenue = orderRepository.sumTodayRevenue(startOfDay);
+
+        return OrderAnalyticsSummaryResponse.builder()
+                .totalOrders(totalOrders)
+                .confirmedOrders(confirmed)
+                .deliveredOrders(delivered)
+                .cancelledOrders(cancelled)
+                .totalRevenue(totalRevenue != null ? totalRevenue : 0.0)
+                .todayOrders(todayOrders)
+                .todayRevenue(todayRevenue != null ? todayRevenue : 0.0)
+                .build();
+    }
+
+    public List<OrderStatusBreakdownResponse> getAnalyticsStatusBreakdown() {
+        long confirmed = orderRepository.countByStatus(OrderStatus.CONFIRMED);
+        long delivered = orderRepository.countByStatus(OrderStatus.DELIVERED);
+        long cancelled = orderRepository.countByStatus(OrderStatus.CANCELLED);
+
+        return List.of(
+                new OrderStatusBreakdownResponse("CONFIRMED", confirmed),
+                new OrderStatusBreakdownResponse("DELIVERED", delivered),
+                new OrderStatusBreakdownResponse("CANCELLED", cancelled)
+        );
     }
 }

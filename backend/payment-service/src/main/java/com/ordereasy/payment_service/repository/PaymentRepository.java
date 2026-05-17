@@ -2,6 +2,7 @@ package com.ordereasy.payment_service.repository;
 
 import com.ordereasy.payment_service.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -11,4 +12,10 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByOrderId(Long orderId);
     List<Payment> findByUserId(Long userId);
+
+    long countByStatus(String status);
+
+    @Query("SELECT COALESCE(SUM(p.amount), 0.0) FROM Payment p WHERE p.status = 'SUCCESS'")
+    Double sumTotalAmountCollected();
 }
+
