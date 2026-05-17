@@ -47,8 +47,9 @@ const Layout = ({ children }) => {
     (role === ROLES.ADMIN || role === ROLES.DELIVERY_PARTNER);
 
   if (hasSidebar) {
+    const isAdmin = role === ROLES.ADMIN;
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className={`flex min-h-screen ${isAdmin ? 'theme-dark bg-[#0F172A] text-slate-100' : 'bg-gray-50 text-slate-700'}`}>
         <Sidebar />
         <div className="flex-1 overflow-auto">
           <Navbar />
