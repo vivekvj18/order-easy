@@ -47,73 +47,69 @@ const ProductCard = ({ product }) => {
       onClick={() => navigate(`/products/${product.id}`)}
     >
       {/* Image */}
-      <div className="relative overflow-hidden bg-gray-200">
+      <div className="relative overflow-hidden bg-[#F1F5F9] h-[160px] rounded-t-2xl flex items-center justify-center">
         <img
           src={getProductImage(product.id, product.name)}
           alt={product.name}
-          className="w-full h-44 object-cover transition-transform duration-300 hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           loading="lazy"
           onError={(e) => { e.target.style.display = 'none'; }}
         />
         {!inStock && (
           <div className="absolute inset-0 bg-gray-900/50 flex items-center justify-center">
-            <span className="bg-white text-gray-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+            <span className="bg-white text-[#0F172A] text-xs font-semibold px-3 py-1.5 rounded-full">
               Out of Stock
             </span>
           </div>
         )}
         {product.category && (
-          <span className="absolute top-2.5 left-2.5 badge bg-white/90 text-gray-700 text-[10px] shadow-sm">
+          <span className="absolute top-2.5 left-2.5 bg-white/90 text-[#16A34A] px-2 py-0.5 rounded-md text-[10px] font-bold shadow-sm">
             {product.category}
           </span>
         )}
       </div>
 
       {/* Body */}
-      <div className="p-4 flex flex-col gap-3 flex-1">
+      <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 text-sm line-clamp-2">{product.name}</h3>
-          {product.description && (
-            <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{product.description}</p>
-          )}
-          <div className="flex items-center gap-1 mt-1">
-            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-            <span className="text-xs text-gray-500">4.{(product.id % 5) + 1} · {50 + (product.id % 200)} reviews</span>
+          <h3 className="font-[600] text-[#0F172A] text-[15px] line-clamp-2 leading-tight">{product.name}</h3>
+          <div className="flex items-center gap-1 mt-1.5">
+            <Star className="w-3.5 h-3.5 text-[#F59E0B] fill-[#F59E0B]" />
+            <span className="text-[13px] text-[#64748B]">4.{(product.id % 5) + 1} · {50 + (product.id % 200)} reviews</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-2">
           <div>
-            <p className="text-brand-green font-bold text-base">{formatCurrency(product.price)}</p>
+            <p className="text-[#0F172A] font-[700] text-[16px]">{formatCurrency(product.price)}</p>
           </div>
 
           {quantity === 0 ? (
             <button
               onClick={handleAdd}
               disabled={!inStock}
-              className="btn-primary text-xs px-3 py-2 rounded-lg"
+              className="bg-white text-[#16A34A] border border-[#E2E8F0] font-bold text-sm px-4 py-1.5 rounded-lg hover:border-[#16A34A] hover:bg-[#F0FDF4] transition-all disabled:opacity-50"
             >
-              <ShoppingCart className="w-3.5 h-3.5" />
-              Add
+              ADD
             </button>
           ) : (
             <div
-              className="flex items-center gap-1 rounded-lg overflow-hidden border border-brand-green"
+              className="flex items-center gap-1 rounded-lg overflow-hidden bg-[#16A34A] text-white animate-fade-in-up"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={handleDecrease}
-                className="px-2 py-1.5 text-brand-green font-bold text-sm hover:bg-brand-green hover:text-white transition-colors duration-150"
+                className="px-2 py-1.5 font-bold text-sm hover:bg-[#15803D] transition-colors duration-150"
                 aria-label="Decrease quantity"
               >
                 −
               </button>
-              <span className="px-2 text-xs font-semibold text-gray-800 min-w-[1.25rem] text-center">
+              <span className="px-1 text-[13px] font-bold min-w-[1.5rem] text-center">
                 {quantity}
               </span>
               <button
                 onClick={handleIncrease}
-                className="px-2 py-1.5 text-brand-green font-bold text-sm hover:bg-brand-green hover:text-white transition-colors duration-150"
+                className="px-2 py-1.5 font-bold text-sm hover:bg-[#15803D] transition-colors duration-150"
                 aria-label="Increase quantity"
               >
                 +

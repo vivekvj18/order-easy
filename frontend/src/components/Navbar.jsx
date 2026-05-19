@@ -44,16 +44,16 @@ const Navbar = () => {
     role === ROLES.CUSTOMER         ? customerLinks : [];
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#E2E8F0] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 no-underline group">
-            <div className="w-9 h-9 rounded-xl bg-green-gradient flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
-              <Package className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
+              <Package className="w-7 h-7 text-[#16A34A]" />
             </div>
-            <span className="text-xl font-bold text-gray-900">
-              Order<span className="text-brand-green">Easy</span>
+            <span className="text-xl font-bold text-[#0F172A]">
+              Order<span className="text-[#16A34A]">Easy</span>
             </span>
           </Link>
 
@@ -64,7 +64,7 @@ const Navbar = () => {
                 <Link
                   key={l.to}
                   to={l.to}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-brand-green hover:bg-primary-50 transition-all no-underline"
+                  className="px-3 py-2 rounded-lg text-sm font-medium text-[#475569] hover:text-[#16A34A] hover:bg-[#DCFCE7] transition-all no-underline"
                 >
                   {l.label}
                 </Link>
@@ -80,11 +80,11 @@ const Navbar = () => {
                 {role === ROLES.CUSTOMER && (
                   <Link
                     to="/cart"
-                    className="relative p-2 rounded-xl hover:bg-primary-50 text-gray-600 hover:text-brand-green transition-all no-underline"
+                    className="relative p-2 rounded-xl hover:bg-[#DCFCE7] text-[#475569] hover:text-[#16A34A] transition-all no-underline"
                   >
                     <ShoppingCart className="w-5 h-5" />
                     {totalItems > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-brand-green text-white text-[10px] font-bold flex items-center justify-center leading-none">
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#16A34A] text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-sm">
                         {totalItems > 9 ? '9+' : totalItems}
                       </span>
                     )}
@@ -93,14 +93,14 @@ const Navbar = () => {
 
                 {/* User avatar */}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-gradient flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-[#16A34A] flex items-center justify-center text-white text-xs font-bold shadow-sm">
                     {getInitials(user?.name || user?.email || 'U')}
                   </div>
                   <div className="hidden sm:flex flex-col">
-                    <span className="text-xs font-semibold text-gray-800 leading-tight">
+                    <span className="text-xs font-semibold text-[#0F172A] leading-tight">
                       {user?.name || 'User'}
                     </span>
-                    <span className="text-[10px] text-gray-400 leading-tight capitalize">
+                    <span className="text-[10px] text-[#94A3B8] leading-tight capitalize">
                       {role?.toLowerCase().replace('_', ' ')}
                     </span>
                   </div>

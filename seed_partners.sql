@@ -1,10 +1,10 @@
 -- SEEDING AUTH USERS
 USE ordereasy_auth_db;
 
--- BCrypt hash for 'password' is '$2a$10$8.UnVuG9HHgffUDAlk8q7uy5XeUCo0KN5VpSLat38YzJPKuL7uSxy'
+-- BCrypt hash for 'password' is '$2a$10$2gZOC.2pX7KYivzSk6LraeUw8YpF3srxbvLRal.vFQLnDA2r7BYoO'
 INSERT INTO users (email, password, role, phone_number) VALUES
-('rider1@ordereasy.com', '$2a$10$8.UnVuG9HHgffUDAlk8q7uy5XeUCo0KN5VpSLat38YzJPKuL7uSxy', 'DELIVERY_PARTNER', '9000000001'),
-('rider2@ordereasy.com', '$2a$10$8.UnVuG9HHgffUDAlk8q7uy5XeUCo0KN5VpSLat38YzJPKuL7uSxy', 'DELIVERY_PARTNER', '9000000002');
+('rider1@ordereasy.com', '$2a$10$2gZOC.2pX7KYivzSk6LraeUw8YpF3srxbvLRal.vFQLnDA2r7BYoO', 'DELIVERY_PARTNER', '9000000001'),
+('rider2@ordereasy.com', '$2a$10$2gZOC.2pX7KYivzSk6LraeUw8YpF3srxbvLRal.vFQLnDA2r7BYoO', 'DELIVERY_PARTNER', '9000000002');
 
 
 -- SEEDING DELIVERY PARTNERS

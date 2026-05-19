@@ -15,16 +15,16 @@
 
   /* Default global light-theme base properties */
   body {
-    @apply font-sans text-gray-800 bg-gray-50 antialiased;
+    @apply font-sans bg-[#F8FAFC] text-[#0F172A] antialiased;
     min-height: 100vh;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold text-gray-900;
+    @apply text-[#0F172A];
   }
 
   a {
-    @apply text-primary-700 hover:text-primary-800 transition-colors;
+    @apply text-[#16A34A] hover:text-[#15803D] transition-colors;
   }
 
   input, select, textarea {
@@ -65,45 +65,50 @@
 }
 
 @layer components {
-  /* Original Component Classes (Restored) */
+  /* Customer App Buttons */
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl
-           bg-brand-green text-white font-semibold text-sm
-           hover:bg-primary-700 active:scale-95
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px]
+           bg-[#16A34A] text-white font-semibold text-sm
+           hover:bg-[#15803D] hover:scale-[1.02] active:scale-95
            transition-all duration-200 shadow-sm
            disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl
-           bg-primary-50 text-brand-green font-semibold text-sm border border-primary-200
-           hover:bg-primary-100 active:scale-95
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px]
+           bg-white text-[#16A34A] font-semibold text-sm border border-[#16A34A]
+           hover:bg-[#DCFCE7] active:scale-95
            transition-all duration-200
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl
-           bg-red-50 text-red-600 font-semibold text-sm border border-red-200
-           hover:bg-red-100 active:scale-95
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-[10px]
+           bg-[#EF4444] text-white font-semibold text-sm
+           hover:bg-red-600 active:scale-95
            transition-all duration-200
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl
-           text-gray-600 font-medium text-sm
+           text-[#475569] font-medium text-sm
            hover:bg-gray-100 active:scale-95
            transition-all duration-200;
   }
 
-  /* Original Cards */
+  /* Customer App Cards */
   .card {
-    @apply bg-white rounded-2xl shadow-card border border-gray-100;
+    @apply bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] transition-all duration-200;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   }
 
   .card-hover {
-    @apply card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 cursor-pointer;
+    @apply card cursor-pointer;
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
   }
 
   /* Original Form Elements */
@@ -261,8 +266,17 @@
   }
 }
 
+@keyframes bounceBtn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.95); }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-bounce-btn:active {
+  animation: bounceBtn 0.2s;
 }
 
 /* Glow Shadow Utilities */
