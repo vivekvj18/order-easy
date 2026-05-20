@@ -32,7 +32,9 @@ public class DeliveryPartner {
 
     private LocalDateTime createdAt;
 
-    // ← ADD THESE TWO FIELDS
+    @Column(name = "auth_user_id", unique = true)
+    private Long authUserId;
+
     private Double latitude;
     private Double longitude;
 }

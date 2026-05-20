@@ -6,6 +6,9 @@ export const getAllDeliveries = () =>
 export const getDeliveriesByPartner = (partnerId) =>
   api.get(`/deliveries/partner/${partnerId}`);
 
+export const getDeliveriesByAuthUser = (authUserId) =>
+  api.get(`/deliveries/partner/auth/${authUserId}`);
+
 export const getDeliveryByOrderId = (orderId) =>
   api.get(`/deliveries/${orderId}`);
 

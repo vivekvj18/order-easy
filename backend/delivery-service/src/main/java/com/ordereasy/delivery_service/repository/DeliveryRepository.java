@@ -10,4 +10,5 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
 
     Optional<Delivery> findByOrderId(Long orderId);
     List<Delivery> findByPartnerId(Long partnerId);
+    List<Delivery> findByPartnerAuthUserId(Long authUserId);
 }

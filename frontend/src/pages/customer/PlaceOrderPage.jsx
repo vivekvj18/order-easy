@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Clock, CheckCircle, ArrowLeft } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { createOrder } from '../../api/ordersApi';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +11,42 @@ import { DELIVERY_SLOTS } from '../../utils/constants';
 import { formatCurrency, extractErrorMessage } from '../../utils/formatters';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import toast from 'react-hot-toast';
+
+// ─── Leaflet Icon Fix ────────────────────────────────────────────────────────
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+const destinationIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Map events handler to select coords on click
+const MapEvents = ({ setCoords }) => {
+  useMapEvents({
+    click(e) {
+      setCoords({ lat: e.latlng.lat, lng: e.latlng.lng });
+    },
+  });
+  return null;
+};
+
+// Map controller to pan view when coords change
+const MapController = ({ center }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) map.panTo(center);
+  }, [center, map]);
+  return null;
+};
 
 const PlaceOrderPage = () => {
   const navigate  = useNavigate();
@@ -17,6 +56,31 @@ const PlaceOrderPage = () => {
   const [slot, setSlot]         = useState('SLOT_10_MIN');
   const [address, setAddress]   = useState('');
   const [loading, setLoading]   = useState(false);
+  const [coords, setCoords]     = useState({ lat: 12.9716, lng: 77.5946 }); // Bangalore center
+  const [gpsLoading, setGpsLoading] = useState(false);
+
+  // Trigger HTML5 Geolocation prompt on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      setGpsLoading(true);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCoords({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+          });
+          toast.success('Automatically fetched your delivery coordinates! 📍');
+          setGpsLoading(false);
+        },
+        (err) => {
+          console.warn('Geolocation error:', err);
+          toast.error('Location access denied. Please click on the map to choose your delivery spot.');
+          setGpsLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 5000 }
+      );
+    }
+  }, []);
 
   const deliveryFee = totalPrice > 199 ? 0 : 29;
   const grandTotal  = totalPrice + deliveryFee + 5;
@@ -33,7 +97,6 @@ const PlaceOrderPage = () => {
     }
     setLoading(true);
     try {
-      // Provide reliable fallbacks in case the browser session is stale (user.id missing)
       const payload = {
         userId:       user?.id || Math.floor(Math.random() * 10000) + 1,
         userEmail:    user?.email || 'user@example.com',
@@ -43,7 +106,10 @@ const PlaceOrderPage = () => {
           price:       i.product.price,
         })),
         deliverySlot:    slot || 'SLOT_10_MIN',
+        deliveryAddress: address.trim(),
         totalAmount:     grandTotal,
+        deliveryLatitude: coords.lat,
+        deliveryLongitude: coords.lng,
       };
       const res = await createOrder(payload);
       clearCart();
@@ -85,6 +151,70 @@ const PlaceOrderPage = () => {
               placeholder="Enter your full delivery address…"
               className="form-input resize-none"
             />
+          </div>
+
+          {/* Interactive Delivery Coordinates Map */}
+          <div className="card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-brand-green animate-pulse" />
+                <h2 className="font-semibold text-gray-900">Pin Location on Map</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (navigator.geolocation) {
+                    setGpsLoading(true);
+                    navigator.geolocation.getCurrentPosition(
+                      (pos) => {
+                        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                        toast.success('Updated to your current location!');
+                        setGpsLoading(false);
+                      },
+                      () => {
+                        toast.error('Location permission denied.');
+                        setGpsLoading(false);
+                      }
+                    );
+                  }
+                }}
+                className="text-xs text-brand-green hover:underline flex items-center gap-1 font-semibold"
+              >
+                {gpsLoading ? 'Locating...' : 'Recenter to GPS'}
+              </button>
+            </div>
+            
+            <div className="h-60 rounded-xl overflow-hidden border border-gray-100 shadow-inner relative z-10">
+              <MapContainer
+                center={[coords.lat, coords.lng]}
+                zoom={14}
+                style={{ height: '100%', width: '100%' }}
+                zoomControl={false}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <MapController center={[coords.lat, coords.lng]} />
+                <MapEvents setCoords={setCoords} />
+                <Marker
+                  draggable={true}
+                  eventHandlers={{
+                    dragend: (e) => {
+                      const position = e.target.getLatLng();
+                      setCoords({ lat: position.lat, lng: position.lng });
+                    }
+                  }}
+                  position={[coords.lat, coords.lng]}
+                  icon={destinationIcon}
+                />
+              </MapContainer>
+            </div>
+            <div className="flex justify-between text-xs text-gray-400 mt-2 font-mono">
+              <span>Lat: {coords.lat.toFixed(5)}</span>
+              <span>Lng: {coords.lng.toFixed(5)}</span>
+              <span className="text-gray-500 font-sans italic">Drag marker or click map to move</span>
+            </div>
           </div>
 
           {/* Delivery slot */}

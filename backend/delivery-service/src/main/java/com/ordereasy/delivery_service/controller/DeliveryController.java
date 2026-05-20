@@ -5,6 +5,7 @@ import com.ordereasy.delivery_service.dto.DeliveryAssignmentResponse;
 import com.ordereasy.delivery_service.dto.DeliveryResponse;
 import com.ordereasy.delivery_service.dto.UpdateDeliveryStatusRequest;
 import com.ordereasy.delivery_service.dto.PartnerSummaryResponse;
+import com.ordereasy.delivery_service.entity.PartnerStatus;
 import com.ordereasy.delivery_service.service.DeliveryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +46,12 @@ public class DeliveryController {
         return deliveryService.getDeliveriesByPartnerId(partnerId);
     }
 
+    @GetMapping("/partner/auth/{authUserId}")
+    public List<DeliveryResponse> getDeliveriesByAuthUser(@PathVariable Long authUserId) {
+        log.info("Received request to fetch deliveries for authUserId: {}", authUserId);
+        return deliveryService.getDeliveriesByAuthUserId(authUserId);
+    }
+
     @PatchMapping("/{deliveryId}/status")
     public DeliveryResponse updateDeliveryStatus(
             @PathVariable Long deliveryId,
@@ -68,5 +75,14 @@ public class DeliveryController {
     public PartnerSummaryResponse getPartnerSummary() {
         log.info("Received request for delivery partner summary");
         return deliveryService.getPartnerSummary();
+    }
+
+    @PutMapping("/partner/{authUserId}/availability")
+    public ResponseEntity<Void> updatePartnerAvailability(
+            @PathVariable Long authUserId,
+            @RequestParam PartnerStatus status) {
+        log.info("Received request to update partner authUserId: {} to status: {}", authUserId, status);
+        deliveryService.updatePartnerAvailability(authUserId, status);
+        return ResponseEntity.noContent().build();
     }
 }

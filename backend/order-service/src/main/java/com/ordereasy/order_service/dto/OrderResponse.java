@@ -18,4 +18,7 @@ public class OrderResponse {
     private LocalDateTime createdAt;
     private List<OrderItemResponse> items;
     private DeliverySlot deliverySlot;
+    private String deliveryAddress;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 }

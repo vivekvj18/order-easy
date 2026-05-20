@@ -37,4 +37,13 @@ public class Delivery {
 
     // Last update kab hua
     private LocalDateTime updatedAt;
+
+    @Column(name = "delivery_latitude")
+    private Double deliveryLatitude;
+
+    @Column(name = "delivery_longitude")
+    private Double deliveryLongitude;
+
+    @Column(name = "assignment_distance_km")
+    private Double assignmentDistanceKm;
 }

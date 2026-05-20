@@ -12,4 +12,6 @@ import lombok.NoArgsConstructor;
 public class DeliveryAssignmentRequest {
     private Long orderId;
     private Long userId;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 }

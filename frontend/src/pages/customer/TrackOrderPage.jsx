@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 
 import { getLatestTracking, getTrackingHistory } from '../../api/trackingApi';
 import { getOrderById } from '../../api/ordersApi';
+import { getDeliveryByOrderId } from '../../api/deliveryApi';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatDateTime, extractErrorMessage } from '../../utils/formatters';
 import toast from 'react-hot-toast';
@@ -59,6 +60,7 @@ const TrackOrderPage = () => {
   const [order, setOrder]       = useState(null);
   const [latest, setLatest]     = useState(null);
   const [history, setHistory]   = useState([]);
+  const [delivery, setDelivery] = useState(null);
   const [loading, setLoading]   = useState(true);
   const [autoRefresh, setAuto]  = useState(true);
 
@@ -76,9 +78,10 @@ const TrackOrderPage = () => {
   // ─── Fetch Tracking Data (Polling) ──────────────────────────────────────────
   const fetchTracking = useCallback(async () => {
     try {
-      const [latRes, histRes] = await Promise.allSettled([
+      const [latRes, histRes, delivRes] = await Promise.allSettled([
         getLatestTracking(orderId),
         getTrackingHistory(orderId),
+        getDeliveryByOrderId(orderId),
       ]);
 
       if (latRes.status === 'fulfilled') {
@@ -90,6 +93,11 @@ const TrackOrderPage = () => {
         const h = histRes.value.data;
         const historyData = Array.isArray(h) ? h : [];
         setHistory(historyData);
+      }
+
+      if (delivRes.status === 'fulfilled') {
+        const d = delivRes.value.data;
+        if (d) setDelivery(d);
       }
     } catch (err) {
       console.error('Tracking fetch error:', err);
@@ -251,10 +259,24 @@ const TrackOrderPage = () => {
           {/* Detailed Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="card p-4 bg-white border-0 shadow-sm">
-              <p className="text-xs text-gray-400 font-semibold mb-1 uppercase tracking-tight">Partner</p>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-blue-500" />
-                <p className="font-bold text-gray-800">Verified Rider</p>
+              <p className="text-xs text-gray-400 font-semibold mb-1 uppercase tracking-tight">Rider & Delivery ID</p>
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-brand-green" />
+                  <p className="font-bold text-gray-800">
+                    {delivery?.partnerName || 'Assigning Rider...'}
+                  </p>
+                </div>
+                {delivery?.partnerPhone && (
+                  <p className="text-xs text-gray-500 ml-6">
+                    Call: <span className="font-semibold text-gray-700">{delivery.partnerPhone}</span>
+                  </p>
+                )}
+                {delivery?.deliveryId && (
+                  <p className="text-[10px] text-gray-400 ml-6 font-mono font-semibold uppercase tracking-wide">
+                    Deliv ID: #{delivery.deliveryId}
+                  </p>
+                )}
               </div>
             </div>
             <div className="card p-4 bg-white border-0 shadow-sm">

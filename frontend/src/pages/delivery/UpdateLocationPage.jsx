@@ -25,6 +25,7 @@ const UpdateLocationPage = () => {
   const { user } = useAuth();
   
   const [orderId, setOrderId] = useState(searchParams.get('orderId') || '');
+  const [partnerId, setPartnerId] = useState(searchParams.get('partnerId') || '');
   const [coords, setCoords]   = useState({ lat: BENGALURU_CENTER.lat, lng: BENGALURU_CENTER.lng });
   const coordsRef = useRef({ lat: BENGALURU_CENTER.lat, lng: BENGALURU_CENTER.lng });
   const [isAutoSync, setIsAutoSync] = useState(false);
@@ -42,13 +43,13 @@ const UpdateLocationPage = () => {
 
   // ─── Core: Update Location API ───────────────────────────────────────────────
   const performSync = async () => {
-    if (!orderId) return;
+    if (!orderId || !partnerId) return;
     const currentCoords = coordsRef.current;
     
     try {
       await updateTracking({
         orderId:   parseInt(orderId),
-        partnerId: user?.id,
+        partnerId: parseInt(partnerId || user?.id),
         latitude:  currentCoords.lat,
         longitude: currentCoords.lng,
         status:    'IN_TRANSIT'
@@ -90,6 +91,7 @@ const UpdateLocationPage = () => {
   // ─── Handlers ───────────────────────────────────────────────────────────────
   const handleManualSync = async () => {
     if (!orderId) { toast.error('Please enter an Order ID'); return; }
+    if (!partnerId) { toast.error('Please enter the Delivery Partner ID from your assigned task'); return; }
     setLoading(true);
     await performSync();
     setLoading(false);
@@ -135,6 +137,20 @@ const UpdateLocationPage = () => {
                   value={orderId}
                   onChange={(e) => setOrderId(e.target.value)}
                   placeholder="e.g. 8821"
+                  className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none transition-all font-mono font-bold text-lg"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">Delivery Partner ID</label>
+              <div className="relative">
+                <Navigation className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={partnerId}
+                  onChange={(e) => setPartnerId(e.target.value)}
+                  placeholder="e.g. 4"
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-green/20 focus:border-brand-green outline-none transition-all font-mono font-bold text-lg"
                 />
               </div>

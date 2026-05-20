@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Clock, Package, AlertTriangle } from 'lucide-react';
 import { getOrderById, cancelOrder } from '../../api/ordersApi';
+import { getDeliveryByOrderId } from '../../api/deliveryApi';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatCurrency, formatDateTime, extractErrorMessage } from '../../utils/formatters';
@@ -15,14 +16,27 @@ const OrderDetailPage = () => {
   const navigate = useNavigate();
 
   const [order, setOrder]   = useState(null);
+  const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
       try {
-        const res = await getOrderById(id);
-        setOrder(res.data?.data || res.data);
+        const [orderRes, deliveryRes] = await Promise.allSettled([
+          getOrderById(id),
+          getDeliveryByOrderId(id),
+        ]);
+
+        if (orderRes.status !== 'fulfilled') {
+          throw orderRes.reason;
+        }
+
+        setOrder(orderRes.value.data?.data || orderRes.value.data);
+
+        if (deliveryRes.status === 'fulfilled') {
+          setDelivery(deliveryRes.value.data?.data || deliveryRes.value.data);
+        }
       } catch (err) {
         toast.error(extractErrorMessage(err));
         navigate('/orders');
@@ -32,6 +46,25 @@ const OrderDetailPage = () => {
     };
     fetch();
   }, [id, navigate]);
+
+  useEffect(() => {
+    if (delivery) return undefined;
+
+    const timer = setInterval(async () => {
+      try {
+        const res = await getDeliveryByOrderId(id);
+        const data = res.data?.data || res.data;
+        if (data) {
+          setDelivery(data);
+          clearInterval(timer);
+        }
+      } catch {
+        // Delivery assignment can be slightly delayed after order creation.
+      }
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [delivery, id]);
 
   const handleCancel = async () => {
     if (!window.confirm('Are you sure you want to cancel this order?')) return;
@@ -49,7 +82,7 @@ const OrderDetailPage = () => {
 
   const currentStep  = STATUS_STEPS.indexOf(order.status);
   const canCancel    = ['CREATED', 'CONFIRMED'].includes(order.status);
-  const canTrack     = ['CONFIRMED', 'DELIVERED'].includes(order.status);
+  const canTrack     = ['CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.status);
   const slotLabel    = DELIVERY_SLOTS.find((s) => s.value === order.deliverySlot)?.label || order.deliverySlot;
 
   return (
@@ -139,6 +172,29 @@ const OrderDetailPage = () => {
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-gray-400" />
               <p className="text-sm text-gray-700">{slotLabel}</p>
+            </div>
+          )}
+
+          {delivery ? (
+            <div className="rounded-xl bg-gray-50 border border-gray-100 p-3 space-y-2">
+              <p className="text-xs text-gray-500 font-semibold uppercase">Assigned Delivery Partner</p>
+              <div className="text-sm text-gray-700 space-y-1">
+                <p><span className="font-semibold text-gray-900">{delivery.partnerName}</span> · Partner #{delivery.partnerId}</p>
+                {delivery.partnerPhone && <p>Phone: {delivery.partnerPhone}</p>}
+                {delivery.partnerEmail && <p>Email: {delivery.partnerEmail}</p>}
+                {delivery.assignmentDistanceKm && (
+                  <p>Assigned distance: {delivery.assignmentDistanceKm.toFixed(2)} km</p>
+                )}
+                {delivery.partnerLatitude && delivery.partnerLongitude && (
+                  <p className="font-mono text-xs text-gray-500">
+                    Rider: {delivery.partnerLatitude.toFixed(5)}, {delivery.partnerLongitude.toFixed(5)}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
+              <p className="text-sm text-amber-800">Delivery partner assignment is still processing.</p>
             </div>
           )}
 

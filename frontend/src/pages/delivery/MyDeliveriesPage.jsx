@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { 
-  getDeliveriesByPartner, 
+  getDeliveriesByAuthUser, 
   updateDeliveryStatus, 
   updatePartnerAvailability 
 } from '../../api/deliveryApi';
@@ -37,7 +37,7 @@ const MyDeliveriesPage = () => {
     else setSyncing(true);
 
     try {
-      const res = await getDeliveriesByPartner(user.id);
+      const res = await getDeliveriesByAuthUser(user.id);
       setAssignedOrders(res.data || []);
     } catch (err) {
       toast.error(extractErrorMessage(err));
@@ -176,7 +176,16 @@ const MyDeliveriesPage = () => {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400 font-bold uppercase tracking-tight">Delivery Hub</p>
-                  <p className="text-sm text-gray-600 font-medium leading-relaxed">Central Distribution Center, Bangalore</p>
+                  <p className="text-sm text-gray-600 font-medium leading-relaxed">
+                    {delivery.deliveryLatitude && delivery.deliveryLongitude
+                      ? `${delivery.deliveryLatitude.toFixed(5)}, ${delivery.deliveryLongitude.toFixed(5)}`
+                      : 'Customer destination pending'}
+                  </p>
+                  {delivery.assignmentDistanceKm && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Assigned from {delivery.assignmentDistanceKm.toFixed(2)} km away
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -201,7 +210,7 @@ const MyDeliveriesPage = () => {
                 )}
                 
                 <button 
-                  onClick={() => navigate(`/delivery/location?orderId=${delivery.orderId}`)}
+                  onClick={() => navigate(`/delivery/location?orderId=${delivery.orderId}&partnerId=${delivery.partnerId}`)}
                   className="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-all group-hover:bg-brand-green group-hover:text-white"
                   title="Update Location"
                 >

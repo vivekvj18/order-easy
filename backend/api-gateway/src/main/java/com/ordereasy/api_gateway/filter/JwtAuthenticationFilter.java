@@ -102,9 +102,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             }
         }
 
-        // Deliveries — ADMIN + DELIVERY_PARTNER
+        // Deliveries — customers may read assignment details for their orders;
+        // delivery partners/admins can use the operational delivery endpoints.
         if (path.startsWith("/deliveries")) {
-            if (!"ADMIN".equals(role) && !"DELIVERY_PARTNER".equals(role)) {
+            boolean isReadRequest = request.getMethod().name().equals("GET");
+            if (!"ADMIN".equals(role) && !"DELIVERY_PARTNER".equals(role) && !("CUSTOMER".equals(role) && isReadRequest)) {
                 return onError(exchange, "Access Denied", HttpStatus.FORBIDDEN);
             }
         }

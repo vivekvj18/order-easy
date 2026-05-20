@@ -34,7 +34,16 @@ public class Order {
     @Column(name = "delivery_slot", nullable = false)
     private DeliverySlot deliverySlot;
 
+    @Column(name = "delivery_address", length = 500)
+    private String deliveryAddress;
+
     private LocalDateTime createdAt;
+
+    @Column(name = "delivery_latitude")
+    private Double deliveryLatitude;
+
+    @Column(name = "delivery_longitude")
+    private Double deliveryLongitude;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> items;

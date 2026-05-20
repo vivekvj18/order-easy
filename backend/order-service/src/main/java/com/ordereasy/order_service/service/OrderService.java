@@ -110,6 +110,9 @@ public class OrderService {
                 .totalAmount(totalAmount)
                 .status(OrderStatus.CONFIRMED)
                 .deliverySlot(request.getDeliverySlot())
+                .deliveryAddress(request.getDeliveryAddress())
+                .deliveryLatitude(request.getDeliveryLatitude())
+                .deliveryLongitude(request.getDeliveryLongitude())
                 .createdAt(LocalDateTime.now())
                 .items(items)
                 .build();
@@ -134,7 +137,7 @@ public class OrderService {
         event.setTotalAmount(savedOrder.getTotalAmount());
         event.setItems(itemEvents);
         event.setDeliverySlot(savedOrder.getDeliverySlot());
-        event.setDeliveryLatitude(request.getDeliveryLatitude());   // ← ADD THIS
+        event.setDeliveryLatitude(request.getDeliveryLatitude());
         event.setDeliveryLongitude(request.getDeliveryLongitude());
 
         try {
@@ -291,6 +294,9 @@ public class OrderService {
                 .createdAt(order.getCreatedAt())
                 .items(itemResponses)
                 .deliverySlot(order.getDeliverySlot())
+                .deliveryAddress(order.getDeliveryAddress())
+                .deliveryLatitude(order.getDeliveryLatitude())
+                .deliveryLongitude(order.getDeliveryLongitude())
                 .build();
     }
 

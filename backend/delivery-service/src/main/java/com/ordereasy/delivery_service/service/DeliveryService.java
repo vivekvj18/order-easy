@@ -14,6 +14,7 @@ import com.ordereasy.delivery_service.event.OrderItemEvent;
 import com.ordereasy.delivery_service.repository.DeliveryPartnerRepository;
 import com.ordereasy.delivery_service.repository.DeliveryRepository;
 import com.ordereasy.delivery_service.strategy.DeliveryAssignmentStrategy;
+import com.ordereasy.delivery_service.util.HaversineUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -53,8 +54,13 @@ public class DeliveryService {
                     .build();
         }
 
-        // FirstAvailableStrategy ignores the OrderCreatedEvent param (passing null is safe)
-        DeliveryPartner selectedPartner = assignmentStrategy.assign(availablePartners, null);
+        OrderCreatedEvent orderEvent = new OrderCreatedEvent();
+        orderEvent.setOrderId(request.getOrderId());
+        orderEvent.setUserId(request.getUserId());
+        orderEvent.setDeliveryLatitude(request.getDeliveryLatitude());
+        orderEvent.setDeliveryLongitude(request.getDeliveryLongitude());
+
+        DeliveryPartner selectedPartner = assignmentStrategy.assign(availablePartners, orderEvent);
 
         Delivery delivery = Delivery.builder()
                 .orderId(request.getOrderId())
@@ -62,6 +68,9 @@ public class DeliveryService {
                 .status(DeliveryStatus.ASSIGNED)
                 .assignedAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .deliveryLatitude(request.getDeliveryLatitude())
+                .deliveryLongitude(request.getDeliveryLongitude())
+                .assignmentDistanceKm(calculateAssignmentDistance(selectedPartner, orderEvent))
                 .build();
 
         Delivery savedDelivery = deliveryRepository.save(delivery);
@@ -83,6 +92,10 @@ public class DeliveryService {
      */
     public void assignDelivery(OrderCreatedEvent event) {
 
+        if (deliveryRepository.findByOrderId(event.getOrderId()).isPresent()) {
+            return;
+        }
+
         List<DeliveryPartner> availablePartners =
                 partnerRepository.findByStatus(PartnerStatus.AVAILABLE);
 
@@ -95,6 +108,9 @@ public class DeliveryService {
                 .status(DeliveryStatus.ASSIGNED)
                 .assignedAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .deliveryLatitude(event.getDeliveryLatitude())
+                .deliveryLongitude(event.getDeliveryLongitude())
+                .assignmentDistanceKm(calculateAssignmentDistance(selectedPartner, event))
                 .build();
 
         deliveryRepository.save(delivery);
@@ -125,12 +141,28 @@ public class DeliveryService {
                 .toList();
     }
 
+    public List<DeliveryResponse> getDeliveriesByAuthUserId(Long authUserId) {
+        return deliveryRepository.findByPartnerAuthUserId(authUserId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     private DeliveryResponse mapToResponse(Delivery delivery) {
+        DeliveryPartner partner = delivery.getPartner();
+
         return DeliveryResponse.builder()
                 .deliveryId(delivery.getId())
                 .orderId(delivery.getOrderId())
-                .partnerId(delivery.getPartner().getId())
-                .partnerName(delivery.getPartner().getName())
+                .partnerId(partner.getId())
+                .partnerName(partner.getName())
+                .partnerPhone(partner.getPhone())
+                .partnerEmail(partner.getEmail())
+                .partnerLatitude(partner.getLatitude())
+                .partnerLongitude(partner.getLongitude())
+                .deliveryLatitude(delivery.getDeliveryLatitude())
+                .deliveryLongitude(delivery.getDeliveryLongitude())
+                .assignmentDistanceKm(delivery.getAssignmentDistanceKm())
                 .status(delivery.getStatus())
                 .assignedAt(delivery.getAssignedAt())
                 .build();
@@ -179,5 +211,33 @@ public class DeliveryService {
                 .available(available)
                 .busy(busy)
                 .build();
+    }
+
+    @Transactional
+    public void updatePartnerAvailability(Long authUserId, PartnerStatus status) {
+        DeliveryPartner partner = partnerRepository.findByAuthUserId(authUserId)
+                .or(() -> partnerRepository.findById(authUserId))
+                .orElseThrow(() -> new RuntimeException("Delivery partner not found"));
+
+        partner.setStatus(status);
+        partnerRepository.save(partner);
+    }
+
+    private Double calculateAssignmentDistance(DeliveryPartner partner, OrderCreatedEvent event) {
+        if (partner == null
+                || event == null
+                || partner.getLatitude() == null
+                || partner.getLongitude() == null
+                || event.getDeliveryLatitude() == null
+                || event.getDeliveryLongitude() == null) {
+            return null;
+        }
+
+        return HaversineUtil.calculateDistance(
+                partner.getLatitude(),
+                partner.getLongitude(),
+                event.getDeliveryLatitude(),
+                event.getDeliveryLongitude()
+        );
     }
 }
