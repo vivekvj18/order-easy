@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 
 import { AuthProvider } from './context/AuthContext';
@@ -43,26 +43,40 @@ import { ROLES }   from './utils/constants';
 // Layout wrapper — shows Sidebar for admin/delivery, Navbar for customer/public
 const Layout = ({ children }) => {
   const { role, isAuthenticated } = useAuth();
+  const location = useLocation();
+  const isAuthPage = ['/login', '/register'].includes(location.pathname);
   const hasSidebar = isAuthenticated &&
     (role === ROLES.ADMIN || role === ROLES.DELIVERY_PARTNER);
 
   if (hasSidebar) {
     const isAdmin = role === ROLES.ADMIN;
     return (
-      <div className={`flex min-h-screen ${isAdmin ? 'theme-dark bg-[#0F172A] text-slate-100' : 'bg-gray-50 text-slate-700'}`}>
-        <Sidebar />
-        <div className="flex-1 overflow-auto">
+      <div className={`flex min-h-screen relative ${isAdmin ? 'theme-dark bg-[#0F172A] text-slate-100' : 'bg-gray-50 text-slate-700'}`}>
+        {/* Subtle background watermark texture for admin/delivery dashboard */}
+        <div 
+          className="absolute inset-0 z-0 bg-[url('/grocery_bg.png')] bg-cover bg-center bg-no-repeat bg-fixed opacity-[0.02] pointer-events-none"
+        />
+        <Sidebar className="relative z-10" />
+        <div className="flex-1 overflow-auto relative z-10 flex flex-col">
           <Navbar />
-          <main className="min-h-[calc(100vh-64px)]">{children}</main>
+          <main className="flex-1 min-h-[calc(100vh-64px)]">{children}</main>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <main>{children}</main>
+    <div className="min-h-screen bg-gray-50 relative flex flex-col">
+      {/* Subtle, faded, soothing background image for customer pages */}
+      {!isAuthPage && (
+        <div 
+          className="absolute inset-0 z-0 bg-[url('/grocery_bg.png')] bg-cover bg-center bg-no-repeat bg-fixed opacity-[0.04] pointer-events-none"
+        />
+      )}
+      <div className="relative z-10 flex flex-col flex-1">
+        {!isAuthPage && <Navbar />}
+        <main className="flex-1">{children}</main>
+      </div>
     </div>
   );
 };
