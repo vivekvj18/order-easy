@@ -58,6 +58,8 @@ public class PaymentService {
                 .transactionId(transactionId)
                 .deliverySlot(event.getDeliverySlot())
                 .items(event.getItems())
+                .deliveryLatitude(event.getDeliveryLatitude())
+                .deliveryLongitude(event.getDeliveryLongitude())
                 .build();
 
         kafkaTemplate.send("payment-completed", completedEvent);

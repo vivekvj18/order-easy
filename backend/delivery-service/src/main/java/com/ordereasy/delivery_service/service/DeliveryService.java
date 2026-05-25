@@ -16,11 +16,13 @@ import com.ordereasy.delivery_service.repository.DeliveryRepository;
 import com.ordereasy.delivery_service.strategy.DeliveryAssignmentStrategy;
 import com.ordereasy.delivery_service.util.HaversineUtil;
 import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 public class DeliveryService {
 
@@ -120,6 +122,11 @@ public class DeliveryService {
     }
 
     public void assignDeliveryFromPayment(PaymentCompletedEvent paymentEvent) {
+        if (!"SUCCESS".equals(paymentEvent.getStatus())) {
+            log.warn("Skipping delivery assignment — payment status is: {}", paymentEvent.getStatus());
+            return;
+        }
+
         // Map PaymentCompletedEvent to OrderCreatedEvent for strategy compatibility
         OrderCreatedEvent orderEvent = new OrderCreatedEvent();
         orderEvent.setOrderId(paymentEvent.getOrderId());
@@ -127,9 +134,9 @@ public class DeliveryService {
         orderEvent.setUserEmail(paymentEvent.getUserEmail());
         orderEvent.setTotalAmount(paymentEvent.getAmount());
         orderEvent.setItems(paymentEvent.getItems());
-
-        // Handle delivery slot mapping if needed (paymentEvent has it as String)
-        // For now, we'll just proceed with basic assignment
+        orderEvent.setDeliveryLatitude(paymentEvent.getDeliveryLatitude());
+        orderEvent.setDeliveryLongitude(paymentEvent.getDeliveryLongitude());
+        // deliverySlot is not used by the assignment strategy — safely omitted
 
         assignDelivery(orderEvent);
     }

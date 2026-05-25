@@ -20,4 +20,6 @@ public class PaymentCompletedEvent {
     private String transactionId;
     private String deliverySlot;
     private List<OrderItemEvent> items;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 }

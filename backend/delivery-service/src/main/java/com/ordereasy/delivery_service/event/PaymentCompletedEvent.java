@@ -17,4 +17,6 @@ public class PaymentCompletedEvent {
     private String transactionId;
     private List<OrderItemEvent> items;
     private String deliverySlot;
+    private Double deliveryLatitude;
+    private Double deliveryLongitude;
 }

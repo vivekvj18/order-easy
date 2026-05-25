@@ -238,7 +238,7 @@ OrderEasy is built on **11 decoupled services**: 2 operational foundation server
   * `POST /deliveries/assign` - Manually triggers rider assignment.
   * `GET /deliveries/analytics/partner-summary` - Summary of active and available riders.
 * **Kafka Topics Consumed**:
-  * `order-created` (group ID: `delivery-group`) -> Automated listener that triggers the `NearestPartnerStrategy` matching sequence immediately.
+  * `payment-completed` (group ID: `delivery-group`) -> Automated listener that triggers the `NearestPartnerStrategy` matching sequence **only after payment status is SUCCESS**. Uses `deliveryLatitude`/`deliveryLongitude` from the event for Haversine-based nearest rider selection.
 
 ### 3.10 Real-Time Tracking Service
 * **Service Name**: `tracking-service`
@@ -494,8 +494,8 @@ Order Service                           Payment Service                      Del
 
 | Topic | Producer (Service + Method) | Consumer (Service + Method + Group ID) |
 | :--- | :--- | :--- |
-| **`order-created`** | `order-service`<br>`OrderKafkaProducer.sendOrderCreatedEvent` | `payment-service` -> `PaymentKafkaConsumer.consume` (`payment-group`) <br><br> `delivery-service` -> `OrderKafkaConsumer.consume` (`delivery-group`) <br><br> `tracking-service` -> `TrackingKafkaConsumer.consume` (`tracking-group`) <br><br> `notification-service` -> `NotificationConsumer.consume` (`notification-group`) |
-| **`payment-completed`** | `payment-service`<br>`PaymentService.processPayment` | *Available for downstream tracking extensions* |
+| **`order-created`** | `order-service`<br>`OrderKafkaProducer.sendOrderCreatedEvent` | `payment-service` -> `PaymentKafkaConsumer.consume` (`payment-group`) <br><br> `tracking-service` -> `TrackingKafkaConsumer.consume` (`tracking-group`) <br><br> `notification-service` -> `NotificationConsumer.consume` (`notification-group`) |
+| **`payment-completed`** | `payment-service`<br>`PaymentService.processPayment` | `delivery-service` -> `OrderKafkaConsumer.handlePaymentCompleted` (`delivery-group`) — assigns nearest rider via Haversine **only when status = SUCCESS** |
 | **`order-cancelled`** | `order-service`<br>`OrderKafkaProducer.sendOrderCancelledEvent` | `inventory-service` -> `OrderKafkaConsumer.consume` (`inventory-group`) <br><br> `notification-service` -> `NotificationConsumer.consume` (`notification-group`) |
 | **`order-status-updated`** | `order-service`<br>`OrderKafkaProducer.sendOrderStatusUpdatedEvent` | `notification-service` -> `NotificationConsumer.consume` (`notification-group`) |
 
@@ -504,7 +504,7 @@ Order Service                           Payment Service                      Del
 2. **Event Emitted**: The `order-service` emits an `order-created` event to Kafka.
 3. **Processing Payment**: The `payment-service` consumes this event, processes the transaction, saves the payment, and emits a `payment-completed` event.
 4. **Reserving Stock**: The `inventory-service` consumes the `order-created` event, validates quantities, and reserves the stock.
-5. **Assigning a Rider**: The `delivery-service` consumes the event and triggers its assignment logic to choose the nearest available rider.
+5. **Assigning a Rider**: The `delivery-service` consumes the `payment-completed` event (not `order-created`). It checks that payment `status == SUCCESS`, maps delivery coordinates, and triggers the `NearestPartnerStrategy` to choose the geographically nearest available rider.
 6. **Updating Status**: The assigned rider accepts the delivery, changing the order status to `CONFIRMED`.
 7. **Transit Updates**: As the rider collects the order and moves, they post coordinate updates to the tracking service. The order status updates to `SHIPPED`, then `OUT_FOR_DELIVERY`.
 8. **Delivery**: The rider marks the order as complete. The order status changes to `DELIVERED`, and the rider's status is reset to `AVAILABLE`.

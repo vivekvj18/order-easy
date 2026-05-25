@@ -133,8 +133,8 @@ Order Service ──► Delivery Service   (partner assignment)
 Cart Service  ──► Product Service    (item validation)
 
 ASYNCHRONOUS (Apache Kafka) — Non-Critical Path:
-Order Service ──► [order-created]      ──► Payment, Delivery, Tracking, Notification
-Payment Svc   ──► [payment-completed]  ──► Delivery Service
+Order Service ──► [order-created]      ──► Payment Service, Tracking Service, Notification Service
+Payment Svc   ──► [payment-completed]  ──► Delivery Service  (rider assigned AFTER payment succeeds)
 Order Service ──► [order-cancelled]    ──► Inventory, Notification
 Order Service ──► [order-status-updated] ► Notification
 ```
@@ -144,19 +144,23 @@ Order Service ──► [order-status-updated] ► Notification
 ```
 Customer Places Order
         ↓
-[order-created] ────────────────────────────────────────────────────┐
-        │                                                           │
-        ▼                                                           ▼
-Payment Service                                          Delivery Service
-(processPayment)                                    (NearestPartnerStrategy)
-        │                                           (Haversine Formula)
-        ▼                                                           │
-[payment-completed]                                                 ▼
-        │                                                   Partner BUSY
-        ▼                                                           │
-(Optional delivery                                     Tracking Service logs
-  reassignment)                                        GPS coordinates
-
+[order-created] ─────────────────────────────────────────────────────┐
+        │                                                            │
+        ▼                                                            ▼
+Payment Service                                           Tracking / Notification
+(processPayment)                                         (consume order-created)
+        │
+        ▼
+[payment-completed] ─────────────────────────────────────────────────┐
+        │                                                            │
+        ▼                                                            ▼
+Delivery Service                                              (status: SUCCESS only)
+(NearestPartnerStrategy)                               Partner BUSY, Haversine used
+(Haversine Formula)
+        │
+        ▼
+  Partner BUSY
+        │
 Partner delivers → [order-status-updated: DELIVERED]
         │
         ▼
