@@ -1,337 +1,423 @@
 <div align="center">
 
-# 🛒 OrderEasy
-### Production-Grade Quick Commerce Platform
+# 🛒 OrderEasy — Quick-Commerce Microservices Platform
 
-**A distributed microservices-based Quick Commerce platform built for hyper-local instant delivery**
+### Production-like backend system for hyperlocal grocery and essentials delivery
 
-[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/projects/jdk/21/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0.5-6DB33F?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
-[![Apache Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?style=for-the-badge&logo=apachekafka)](https://kafka.apache.org/)
-[![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
-[![MySQL](https://img.shields.io/badge/MySQL-8.x-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
+**Java · Spring Boot · Microservices · Kafka · MySQL · React · Spring Cloud Gateway · Eureka · OpenFeign · Resilience4j**
 
----
-
-[Features](#-features) • [Architecture](#-architecture) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [API Reference](#-api-reference) • [Design Decisions](#-design-decisions)
+[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring_Boot-Microservices-6DB33F?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Kafka](https://img.shields.io/badge/Apache_Kafka-Event_Driven-231F20?style=for-the-badge&logo=apachekafka)](https://kafka.apache.org/)
+[![MySQL](https://img.shields.io/badge/MySQL-Database_Per_Service-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react)](https://react.dev/)
 
 </div>
 
 ---
 
-## 📖 Overview
+## 📌 Overview
 
-**OrderEasy** is a production-grade, event-driven **Quick Commerce (Q-Commerce)** platform built on a distributed microservices architecture. It covers the complete operational backend of hyper-local instant delivery — from customer checkout to real-time GPS delivery tracking — solving the hardest engineering challenges in the Q-Commerce domain.
+**OrderEasy** is a production-like quick-commerce platform inspired by systems such as Blinkit, Instamart, and Zepto. The project focuses on backend architecture concepts used in real-world order management systems: microservices, API Gateway, service discovery, database-per-service, synchronous and asynchronous communication, inventory consistency, rider assignment, live tracking, and role-based access control.
 
-### The Problem It Solves
+The system supports the complete order journey:
 
-Quick commerce platforms promise delivery within 10 minutes. Achieving this under load requires solving:
+```text
+Customer checkout → stock reservation → order creation → payment processing → rider assignment → live tracking → notification
+```
 
-| Challenge | Solution in OrderEasy |
+The main design goal is to show how a quick-commerce backend can maintain correctness during checkout while keeping downstream workflows decoupled and scalable.
+
+---
+
+## ✨ Key Highlights
+
+- Built with **9 Spring Boot domain microservices**.
+- Used **Spring Cloud Gateway** as the single entry point.
+- Used **Eureka Discovery Server** for service registration and discovery.
+- Followed **database-per-service** architecture using MySQL.
+- Used **OpenFeign** for synchronous service-to-service communication.
+- Added **Resilience4j Circuit Breaker** to protect critical downstream calls.
+- Used **Kafka** for asynchronous event-driven workflows.
+- Implemented **two-phase stock reservation** using `@Transactional`.
+- Prevented stock overselling using **JPA Optimistic Locking** with `@Version`.
+- Returned **HTTP 409 Conflict** on version mismatch / concurrent stock update conflict.
+- Assigned riders using **Haversine distance calculation** and **Strategy Pattern**.
+- Built live delivery tracking using **React Leaflet**, rider marker, route polyline, and 3-second polling.
+- Enforced **JWT-based RBAC** for `CUSTOMER`, `ADMIN`, and `DELIVERY_PARTNER` at API Gateway level.
+
+---
+
+## 🧩 Microservices and Responsibilities
+
+| Service | Responsibility | Database / Ownership |
+|---|---|---|
+| **Auth Service** | User registration, login, JWT generation, role management | `ordereasy_auth_db` |
+| **Product Service** | Product catalog, product details, product listing | `ordereasy_product_db` |
+| **Cart Service** | Customer cart management and cart item operations | `ordereasy_cart_db` |
+| **Inventory Service** | Stock quantity, reserved quantity, optimistic locking, stock release | `ordereasy_inventory_db` |
+| **Order Service** | Checkout orchestration, order creation, order status, Kafka event publishing | `ordereasy_order_db` |
+| **Payment Service** | Simulated payment processing, idempotent payment creation, `payment-completed` event | `ordereasy_payment_db` |
+| **Delivery Service** | Rider assignment, partner availability, Haversine-based nearest rider selection | `ordereasy_delivery_db` |
+| **Tracking Service** | Rider GPS updates, latest location, route history | `ordereasy_tracking_db` |
+| **Notification Service** | Order and status notifications through async events | `ordereasy_notification_db` |
+
+### Supporting Infrastructure
+
+| Component | Purpose |
 |---|---|
-| Concurrent stock overselling (flash sales) | Optimistic Locking with `@Version` on Stock entity |
-| Service failure propagation | Resilience4j Circuit Breaker with fallback methods |
-| Order-to-rider assignment latency | Haversine formula — nearest partner strategy |
-| Distributed state consistency | Event-driven Kafka architecture with isolated DBs |
-| Real-time GPS tracking overhead | Polling-based Leaflet map with 3s refresh |
-| Duplicate payment processing | Idempotency check on `orderId` in PaymentService |
+| **Spring Cloud Gateway** | Single entry point, route mapping, JWT validation, RBAC enforcement |
+| **Eureka Discovery Server** | Service registration and discovery |
+| **Apache Kafka** | Event bus for asynchronous workflows |
+| **MySQL** | Separate database per service |
 
 ---
 
-## ✨ Features
+## 🔁 End-to-End Order Flow
 
-### 👤 Customer
-- Register / Login with **Email + Password** or **Phone OTP** (Twilio Verify)
-- Browse product catalog and manage shopping cart
-- Place orders with delivery slot selection (`SLOT_10_MIN`)
-- Real-time delivery tracking on **interactive Leaflet map**
-- View order history, order details, and cancel orders
+```mermaid
+sequenceDiagram
+    actor Customer
+    participant UI as React Frontend
+    participant GW as API Gateway
+    participant OS as Order Service
+    participant IS as Inventory Service
+    participant K as Kafka
+    participant PS as Payment Service
+    participant DS as Delivery Service
+    participant TS as Tracking Service
+    participant NS as Notification Service
 
-### 🛵 Delivery Partner
-- View assigned deliveries and update delivery status
-- Toggle availability (`AVAILABLE` / `BUSY`)
-- Live GPS location sharing via **browser Geolocation API**
-- Simulation mode with **mathematical drift algorithm** for testing
+    Customer->>UI: Checkout with cart + delivery location
+    UI->>GW: POST /orders with JWT
+    GW->>GW: Validate JWT + CUSTOMER role
+    GW->>OS: Route checkout request
 
-### 🔧 Admin
-- **Analytics Dashboard** with real-time KPIs, charts, and trends
-  - 7-day order growth area chart
-  - Order status donut chart (Recharts)
-  - Inventory stock level bar chart with danger zone
-  - Fleet availability donut chart
-- Manage all orders with status update capability
-- Real-time inventory stock audit with health score
-- Rider operations control center with live fleet grid
-- View all payments and transaction logs
+    OS->>IS: Reserve stock using OpenFeign
+    IS->>IS: Validate all items transactionally
+    IS->>IS: Reserve stock using quantity + reservedQuantity + @Version
+    IS-->>OS: Reservation success / failure
+
+    OS->>OS: Create order
+    OS->>K: Publish order-created
+
+    K->>PS: Consume order-created
+    PS->>PS: Process payment
+    PS->>K: Publish payment-completed
+
+    K->>DS: Consume payment-completed
+    DS->>DS: If status == SUCCESS, assign nearest rider
+    DS->>DS: Haversine + Strategy Pattern
+
+    K->>TS: Initialize / update tracking workflow
+    K->>NS: Send order notification
+    TS-->>UI: Rider location via 3-second polling
+```
+
+### Corrected Delivery Workflow
+
+Delivery assignment happens **after payment succeeds**, not directly after order creation.
+
+```text
+order-created → Payment Service → payment-completed → Delivery Service → rider assignment
+```
+
+This avoids assigning riders for unpaid or failed orders.
 
 ---
 
-## 🏗 Architecture
+## 🔌 Communication Pattern
 
-### System Architecture Diagram
+| Communication | Used For | Why |
+|---|---|---|
+| **REST via Gateway** | Frontend access to backend services | Single entry point, centralized auth, cleaner routing |
+| **OpenFeign** | Order Service → Inventory Service | Checkout needs immediate stock success/failure response |
+| **Kafka** | Payment, delivery, tracking, notification workflows | Decouples downstream services from checkout thread |
+| **Eureka** | Service discovery | Services can call each other by service name instead of hardcoded host/port |
+| **Resilience4j Circuit Breaker** | Critical Feign calls | Prevents cascading failure when downstream service is unavailable |
 
-```
-                        ┌─────────────────────────┐
-                        │    React Frontend        │
-                        │    (Vite, Port 5173)     │
-                        └───────────┬─────────────┘
-                                    │ HTTP
-                        ┌───────────▼─────────────┐
-                        │      API Gateway         │
-                        │  (Spring Cloud, 8084)    │
-                        │  JWT Filter + Routing    │
-                        └───────────┬─────────────┘
-                                    │
-              ┌─────────────────────┼──────────────────────┐
-              │                     │                      │
-   ┌──────────▼──────┐  ┌──────────▼──────┐  ┌───────────▼─────┐
-   │  Auth Service   │  │  Order Service  │  │  Cart Service   │
-   │   (Port 8081)   │  │   (Port 8083)   │  │   (Port 8085)   │
-   │  ordereasy_     │  │  ordereasy_     │  │  ordereasy_     │
-   │  auth_db        │  │  order_db       │  │  cart_db        │
-   └─────────────────┘  └────────┬────────┘  └─────────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │   Inventory Service     │  ← Feign (sync)
-                    │    (Port 8086)          │
-                    │   ordereasy_inventory_db│
-                    └────────────┬────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │      Apache Kafka        │
-                    │   (Event Bus / Topics)   │
-                    └────┬──────┬──────┬───────┘
-                         │      │      │
-          ┌──────────────┘  ┌───┘  └───────────────┐
-          │                 │                       │
-┌─────────▼──────┐ ┌────────▼───────┐  ┌───────────▼──────┐
-│ Payment Service│ │Delivery Service│  │Notification Svc  │
-│  (Port 8090)   │ │  (Port 8087)   │  │   (Port 8089)    │
-│  _payment_db   │ │  _delivery_db  │  │ _notification_db │
-└────────────────┘ └────────┬───────┘  └──────────────────┘
-                            │
-                  ┌─────────▼──────┐
-                  │Tracking Service│
-                  │  (Port 8088)   │
-                  │  _tracking_db  │
-                  └────────────────┘
+### Why synchronous call for inventory?
 
-        All services register with:
-        ┌─────────────────────────┐
-        │   Discovery Server      │
-        │  (Eureka, Port 8761)    │
-        └─────────────────────────┘
+Stock reservation is part of the critical checkout path. The customer should not receive order confirmation unless inventory is actually available and reserved. Therefore, Order Service calls Inventory Service synchronously using OpenFeign.
+
+### Why Kafka for payment and delivery?
+
+Payment, delivery assignment, tracking, and notifications are downstream workflows. They can be handled asynchronously after the order is created, which keeps the checkout flow cleaner and reduces tight coupling between services.
+
+---
+
+## 📦 Stock Reservation and Overselling Prevention
+
+Inventory Service maintains two important values:
+
+```text
+quantity          → total physical stock
+reservedQuantity  → quantity temporarily reserved during order processing
 ```
 
-### Communication Pattern
+During checkout, Inventory Service follows a two-phase reservation approach:
 
-```
-SYNCHRONOUS (OpenFeign) — Critical Path:
-Order Service ──► Inventory Service  (stock reservation)
-Order Service ──► Delivery Service   (partner assignment)
-Cart Service  ──► Product Service    (item validation)
-
-ASYNCHRONOUS (Apache Kafka) — Non-Critical Path:
-Order Service ──► [order-created]      ──► Payment Service, Tracking Service, Notification Service
-Payment Svc   ──► [payment-completed]  ──► Delivery Service  (rider assigned AFTER payment succeeds)
-Order Service ──► [order-cancelled]    ──► Inventory, Notification
-Order Service ──► [order-status-updated] ► Notification
+```text
+Phase 1: Validate all requested items
+Phase 2: Reserve all items only if every item is available
 ```
 
-### Kafka Event Lifecycle
+The reservation method is transactional:
 
+```text
+If any item is unavailable → transaction fails → no partial reservation
+If all items are available → reservedQuantity increases for all items
 ```
-Customer Places Order
+
+### Optimistic Locking
+
+The `Stock` entity uses JPA `@Version`.
+
+```java
+@Version
+private Long version;
+```
+
+If two customers try to reserve the last unit of the same product at the same time:
+
+```text
+Both transactions read the same stock row
+First transaction commits successfully and increments version
+Second transaction tries to commit with old version
+JPA detects version mismatch
+Second request fails with conflict
+Stock never goes negative
+```
+
+The API returns **HTTP 409 Conflict** when a concurrent stock update conflict occurs.
+
+---
+
+## 💳 Payment and Delivery Workflow
+
+The order-payment-delivery flow is event-driven:
+
+```text
+1. Order Service reserves stock.
+2. Order Service creates order.
+3. Order Service publishes order-created event.
+4. Payment Service consumes order-created.
+5. Payment Service processes payment.
+6. Payment Service publishes payment-completed event.
+7. Delivery Service consumes payment-completed.
+8. Delivery Service assigns a rider only if payment status is SUCCESS.
+```
+
+This design ensures that riders are not assigned for unpaid or failed orders.
+
+### Kafka Event Flow
+
+```mermaid
+flowchart LR
+    ORDER[Order Service] -->|order-created| KAFKA[(Kafka)]
+    KAFKA --> PAYMENT[Payment Service]
+    PAYMENT -->|payment-completed| KAFKA
+    KAFKA --> DELIVERY[Delivery Service]
+    DELIVERY --> RIDER[Nearest Rider Assigned]
+
+    KAFKA --> NOTIFY[Notification Service]
+    KAFKA --> TRACKING[Tracking Service]
+```
+
+Kafka is treated as **at-least-once delivery**, so consumers use idempotency checks where needed, such as checking by `orderId` before creating duplicate payment or delivery records.
+
+---
+
+## 🛵 Rider Assignment Design
+
+Delivery Service assigns riders based on customer delivery coordinates and available delivery partner coordinates.
+
+### Haversine Formula
+
+The Haversine formula is used because latitude and longitude are spherical coordinates, not flat Cartesian points.
+
+```text
+Customer location + rider location → distance in kilometers
+```
+
+The current strategy selects the nearest available rider in Bangalore.
+
+### Strategy Pattern
+
+Rider assignment is implemented using the Strategy Pattern.
+
+```text
+DeliveryAssignmentStrategy
         ↓
-[order-created] ─────────────────────────────────────────────────────┐
-        │                                                            │
-        ▼                                                            ▼
-Payment Service                                           Tracking / Notification
-(processPayment)                                         (consume order-created)
-        │
-        ▼
-[payment-completed] ─────────────────────────────────────────────────┐
-        │                                                            │
-        ▼                                                            ▼
-Delivery Service                                              (status: SUCCESS only)
-(NearestPartnerStrategy)                               Partner BUSY, Haversine used
-(Haversine Formula)
-        │
-        ▼
-  Partner BUSY
-        │
-Partner delivers → [order-status-updated: DELIVERED]
-        │
-        ▼
-Partner → AVAILABLE
-Notification sent to Customer
+NearestPartnerStrategy
+        ↓
+Haversine-based nearest rider selection
 ```
+
+This follows the **Open/Closed Principle**:
+
+```text
+Add a new assignment strategy without modifying the core delivery assignment flow.
+```
+
+Examples of future strategies:
+
+- nearest rider
+- least-loaded rider
+- zone-based rider
+- priority rider assignment
+- batching-based assignment
 
 ---
 
-## 💻 Tech Stack
+## 🗺️ Live Tracking
+
+Live tracking is implemented using the Tracking Service and React Leaflet.
+
+### Tracking Flow
+
+```text
+Delivery Partner updates location
+        ↓
+Tracking Service stores latest coordinates
+        ↓
+Customer frontend polls every 3 seconds
+        ↓
+React Leaflet updates rider marker and route polyline
+```
+
+### Why polling instead of WebSocket?
+
+Polling is simpler and sufficient for this project because updates every 3 seconds are acceptable for a quick-commerce tracking flow.
+
+For a production-scale system, WebSocket or Server-Sent Events would reduce unnecessary repeated requests and provide lower-latency updates.
+
+---
+
+## 🔐 Security and RBAC
+
+Authentication and authorization are centralized at the API Gateway.
+
+```text
+Client request → API Gateway → JWT validation → role check → route to service
+```
+
+### Roles
+
+| Role | Access |
+|---|---|
+| **CUSTOMER** | Browse products, manage cart, place orders, view own orders, track delivery |
+| **ADMIN** | Manage inventory, orders, riders, analytics |
+| **DELIVERY_PARTNER** | View assigned deliveries, update delivery status, update location |
+
+### Why validate JWT at Gateway?
+
+Gateway-level validation avoids duplicating authentication logic in every service and ensures unauthorized requests are blocked before reaching internal services.
+
+---
+
+## 🛡️ Resilience and Failure Handling
+
+| Failure Case | Handling |
+|---|---|
+| Inventory Service unavailable | Resilience4j Circuit Breaker prevents repeated failing calls |
+| Concurrent stock reservation | `@Version` optimistic locking detects conflict |
+| One item unavailable in cart | Transaction rolls back, no partial stock reservation |
+| Duplicate Kafka event | Consumers use `orderId`-based idempotency where applicable |
+| Payment not successful | Delivery Service skips rider assignment unless status is `SUCCESS` |
+| Tracking update delay | Frontend continues polling and updates when latest location is available |
+
+> Kafka is not treated as exactly-once. The project assumes at-least-once delivery and handles duplicate events at the consumer level where required.
+
+---
+
+## 🧠 Design Patterns and System Design Concepts
+
+| Concept / Pattern | Where Used | Why |
+|---|---|---|
+| **Microservices Architecture** | 9 domain services | Independent ownership and separation of responsibilities |
+| **Database-per-service** | Separate MySQL DB per service | Loose coupling and independent data ownership |
+| **API Gateway Pattern** | Spring Cloud Gateway | Single entry point, routing, JWT validation, RBAC |
+| **Service Discovery** | Eureka | Dynamic service lookup without hardcoded URLs |
+| **Event-Driven Architecture** | Kafka workflows | Decouple payment, delivery, notification, and tracking |
+| **Circuit Breaker** | Resilience4j with Feign | Prevent cascading failures |
+| **Strategy Pattern** | Rider assignment | Add new assignment algorithms easily |
+| **Optimistic Locking** | Inventory stock update | Prevent overselling without pessimistic locks |
+| **Transactional Boundary** | Bulk stock reservation | Prevent partial updates |
+| **Idempotency** | Payment/delivery consumers | Handle duplicate Kafka messages safely |
+
+---
+
+## 🧰 Tech Stack
 
 ### Backend
 
-| Technology | Version | Purpose |
-|---|---|---|
-| Java | 21 | Core language (Virtual Threads) |
-| Spring Boot | 4.0.5 | Microservice framework |
-| Spring Cloud | 2025.1.1 | Service discovery + API Gateway |
-| Spring Cloud OpenFeign | - | Synchronous inter-service communication |
-| Spring Data JPA / Hibernate | 6.x | ORM and database operations |
-| Resilience4j | 2.x | Circuit Breaker + fault tolerance |
-| Apache Kafka | (Confluent 7.4.0) | Event streaming / async messaging |
-| Netflix Eureka | - | Service discovery and registration |
-| JWT (jjwt) | 0.11.5 | Stateless authentication tokens |
-| Twilio Verify SDK | 10.1.0 | SMS OTP authentication |
-| Project Lombok | - | Boilerplate reduction |
-| MySQL | 8.x | Relational data persistence |
-| Maven | 3.x | Build automation |
-| Docker & Docker Compose | - | Kafka infrastructure containerization |
+| Technology | Purpose |
+|---|---|
+| Java | Backend programming language |
+| Spring Boot | Microservice development |
+| Spring Cloud Gateway | API Gateway and request routing |
+| Eureka Discovery Server | Service discovery |
+| Spring Cloud OpenFeign | Synchronous inter-service calls |
+| Resilience4j | Circuit Breaker and fault tolerance |
+| Apache Kafka | Event-driven communication |
+| Spring Data JPA / Hibernate | ORM and database access |
+| MySQL | Relational persistence |
+| JWT | Stateless authentication |
+| Maven | Build management |
 
 ### Frontend
 
-| Technology | Version | Purpose |
-|---|---|---|
-| React | 19.2.4 | UI framework |
-| Vite | 8.0.4 | Build tool + Dev server |
-| React Router DOM | 7.14.0 | Client-side routing |
-| Axios | 1.15.0 | HTTP client with interceptors |
-| Leaflet.js | 1.9.4 | Interactive map engine |
-| React Leaflet | 5.0.0 | React bindings for Leaflet |
-| Recharts | 3.8.1 | Data visualization charts |
-| Tailwind CSS | 3.4.19 | Utility-first CSS styling |
-| Lucide React | 1.8.0 | Icon library |
-| React Hot Toast | 2.6.0 | Toast notifications |
+| Technology | Purpose |
+|---|---|
+| React.js | Frontend UI |
+| Vite | Frontend build tool |
+| Axios | HTTP communication |
+| React Router | Client-side routing |
+| Leaflet / React Leaflet | Live map tracking |
+| Tailwind CSS | Styling |
+| Recharts | Admin analytics charts |
 
 ---
 
-## 🗂 Microservices Reference
+## 🗂️ Project Structure
 
-| Service | Port | Database | Responsibility |
-|---|---|---|---|
-| Discovery Server | 8761 | — | Eureka service registry |
-| API Gateway | 8084 | — | Routing, JWT filter, CORS |
-| Auth Service | 8081 | ordereasy_auth_db | Registration, Login, OTP, JWT |
-| Product Service | 8082 | ordereasy_product_db | Product catalog CRUD |
-| Cart Service | 8085 | ordereasy_cart_db | Shopping cart management |
-| Inventory Service | 8086 | ordereasy_inventory_db | Stock control, reservations |
-| Order Service | 8083 | ordereasy_order_db | Order orchestration, Kafka events |
-| Payment Service | 8090 | ordereasy_payment_db | Transaction processing |
-| Delivery Service | 8087 | ordereasy_delivery_db | Partner assignment, lifecycle |
-| Tracking Service | 8088 | ordereasy_tracking_db | GPS coordinate logging |
-| Notification Service | 8089 | ordereasy_notification_db | Async alerts and messages |
+```text
+order-easy-main/
+├── backend/
+│   ├── api-gateway/               # Gateway routing + JWT/RBAC
+│   ├── auth-service/              # Auth, JWT, roles
+│   ├── product-service/           # Product catalog
+│   ├── cart-service/              # Cart management
+│   ├── inventory-service/         # Stock reservation + optimistic locking
+│   ├── order-service/             # Checkout orchestration + order events
+│   ├── payment-service/           # Payment processing + payment events
+│   ├── delivery-service/          # Rider assignment + Haversine strategy
+│   ├── tracking-service/          # GPS tracking
+│   ├── notification-service/      # Async notifications
+│   └── discovery-server/          # Eureka server
+├── frontend/                      # React frontend
+├── infrastructure/
+│   └── kafka/                     # Kafka + Zookeeper docker-compose
+├── docs/                          # Architecture and design documentation
+├── seed_inventory.sql
+├── seed_partners.sql
+├── start-all.sh
+├── stop-all.sh
+└── status-check.sh
+```
 
 ---
 
-## 🔑 Design Decisions
-
-### 1. Feign vs Kafka — The Critical Decision
-
-The most important architectural decision in OrderEasy is the **hybrid communication model**.
-
-**Why Feign for Inventory + Delivery?**
-In Q-Commerce, placing an order requires *immediate* validation:
-- Is the stock actually available? → Must check synchronously
-- Is there a delivery partner available? → Must confirm before saving the order
-
-Using Kafka here would mean publishing an event, saving the order as `CONFIRMED`, and *then* discovering stock is empty — giving the customer a **false confirmation**. This is a correctness requirement, not a performance choice.
-
-**Why Kafka for Payment, Notification, Tracking?**
-Once stock is reserved and the order is saved, downstream actions do not need to block the customer's checkout thread. Publishing to Kafka allows instant `201 Created` response while payment processing, rider assignment, and notifications happen asynchronously in parallel.
-
-### 2. Optimistic Locking — Race Condition Prevention
-
-```java
-@Entity
-public class Stock {
-    @Version
-    private Long version; // JPA adds WHERE version=? on every UPDATE
-}
-```
-
-Two users order the last item simultaneously:
-- Both read `{ quantity: 1, version: 5 }`
-- User A writes → version becomes 6 ✅
-- User B writes → `WHERE version=5` fails → `OptimisticLockException` → 409 Conflict ✅
-- Stock never goes negative. No row locking. Zero throughput penalty.
-
-### 3. Haversine Formula — Nearest Partner Selection
-
-```java
-// HaversineUtil.java — delivery-service
-public static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    double dLat = Math.toRadians(lat2 - lat1);
-    double dLon = Math.toRadians(lon2 - lon1);
-    double a = Math.sin(dLat/2) * Math.sin(dLat/2)
-             + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-             * Math.sin(dLon/2) * Math.sin(dLon/2);
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-```
-
-Earth is a sphere — Pythagoras doesn't work for GPS coordinates. Haversine calculates the true great-circle distance, the same algorithm used by Blinkit and Zepto for rider assignment.
-
-**Strategy Pattern implementation:**
-```
-DeliveryAssignmentStrategy (interface)
-    ├── NearestPartnerStrategy (@Primary) → uses Haversine
-    └── FirstAvailableStrategy            → fallback when no GPS data
-```
-`DeliveryService` was never modified — **Open/Closed Principle in practice**.
-
-### 4. Two-Phase Atomic Stock Reservation
-
-```
-POST /stock/reserve-bulk
-@Transactional
-
-Phase 1 — VALIDATE ALL:
-  For each item: if (quantity - reserved < requested) → throw InsufficientStockException
-  → If ANY item fails, entire transaction rolls back
-
-Phase 2 — DEDUCT ALL:
-  For each item: reservedQuantity += requested
-  → Only runs if Phase 1 fully passed
-```
-
-This prevents partial reservations where some items deduct but others fail.
-
-### 5. Idempotent Payment Processing
-
-```java
-// PaymentService.java
-if (paymentRepository.findByOrderId(event.getOrderId()).isPresent()) {
-    return; // Already processed — skip silently
-}
-```
-
-Kafka can redeliver messages. Without this check, a network retry could charge a customer twice. The `orderId` acts as an idempotency key — the same pattern used by Stripe.
-
-### 6. Circuit Breaker Configuration
-
-```yaml
-# Resilience4j in order-service
-slidingWindowSize: 10
-failureRateThreshold: 50%       # Trip if 50% of last 10 calls fail
-waitDurationInOpenState: 10s    # Wait 10s before retrying
-permittedNumberOfCallsInHalfOpenState: 3
-```
-
-If Inventory Service goes down, the Circuit Breaker trips after 5 failures, returns an immediate fallback response, and prevents thread starvation — exactly the Netflix Circuit Breaker pattern.
-
----
-
-## 🚀 Getting Started
+## 🚀 How to Run
 
 ### Prerequisites
 
 - Java 21+
-- MySQL 8.x running on port 3306
-- Docker & Docker Compose
-- Node.js 18+ with npm
+- Maven
+- MySQL 8+
+- Docker and Docker Compose
+- Node.js 18+
 
 ### 1. Clone the Repository
 
@@ -340,49 +426,67 @@ git clone https://github.com/vivekvj18/ordereasy.git
 cd ordereasy
 ```
 
-### 2. Environment Setup
+### 2. Configure Environment Variables
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root.
 
 ```env
-JWT_SECRET=mysecretkeymysecretkeymysecretkeymysecretkeymysecretkey
-DB_USERNAME=spring_user
-DB_PASSWORD=Spring@2024
+JWT_SECRET=replace_with_your_jwt_secret
+DB_USERNAME=your_mysql_username
+DB_PASSWORD=your_mysql_password
 TWILIO_ACCOUNT_SID=your_twilio_account_sid
 TWILIO_AUTH_TOKEN=your_twilio_auth_token
-TWILIO_VERIFY_SERVICE_SID=your_twilio_verify_sid
+TWILIO_VERIFY_SERVICE_SID=your_twilio_verify_service_sid
 ```
 
-### 3. Database Setup
+Do not commit real secrets.
 
-Create these databases in MySQL:
+### 3. Create Databases
 
 ```sql
 CREATE DATABASE ordereasy_auth_db;
-CREATE DATABASE ordereasy_order_db;
+CREATE DATABASE ordereasy_product_db;
+CREATE DATABASE ordereasy_cart_db;
 CREATE DATABASE ordereasy_inventory_db;
+CREATE DATABASE ordereasy_order_db;
+CREATE DATABASE ordereasy_payment_db;
 CREATE DATABASE ordereasy_delivery_db;
 CREATE DATABASE ordereasy_tracking_db;
 CREATE DATABASE ordereasy_notification_db;
-CREATE DATABASE ordereasy_cart_db;
-CREATE DATABASE ordereasy_payment_db;
 ```
 
-### 4. Start Everything
+### 4. Start Kafka
 
 ```bash
-# One command to start all services
+cd infrastructure/kafka
+docker-compose up -d
+```
+
+### 5. Start Backend Services
+
+You can use the startup script:
+
+```bash
 ./start-all.sh
 ```
 
-This script:
-1. Loads environment variables from `.env`
-2. Starts Kafka + Zookeeper via Docker Compose
-3. Starts Eureka Discovery Server
-4. Starts all 9 microservices with proper sequencing
-5. Waits for each service to register before proceeding
+Or start services manually in this order:
 
-### 5. Start Frontend
+```text
+1. discovery-server
+2. api-gateway
+3. auth-service
+4. product-service
+5. cart-service
+6. inventory-service
+7. order-service
+8. payment-service
+9. delivery-service
+10. tracking-service
+11. notification-service
+```
+
+### 6. Start Frontend
 
 ```bash
 cd frontend
@@ -390,253 +494,90 @@ npm install
 npm run dev
 ```
 
-### 6. Verify All Services
+### 7. Check Service Status
 
 ```bash
 ./status-check.sh
 ```
 
-Expected output:
-```
-✅ Eureka Server (port 8761) — RUNNING
-✅ Auth Service (port 8081)  — RUNNING
-✅ Order Service (port 8083) — RUNNING
-✅ API Gateway (port 8084)   — RUNNING
-✅ Inventory Service (8086)  — RUNNING
-✅ Delivery Service (8087)   — RUNNING
-... (all green)
-```
+---
 
-### 7. Access the Application
+## 📡 Important Workflow APIs
 
-| Interface | URL | Credentials |
+> This README focuses on the core service workflows. The list below contains the most important workflow APIs only.
+
+| Service | Endpoint | Purpose |
 |---|---|---|
-| Customer App | http://localhost:5173 | Register a new account |
-| Admin Dashboard | http://localhost:5173 | admin@ordereasy.com / Admin@123 |
-| Delivery Partner | http://localhost:5173 | Register with role DELIVERY_PARTNER |
-| Eureka Dashboard | http://localhost:8761 | — |
+| Auth Service | `POST /auth/signup` | Register user |
+| Auth Service | `POST /auth/login` | Login and receive JWT |
+| Product Service | `GET /products` | Browse products |
+| Cart Service | `POST /cart/items` | Add item to cart |
+| Order Service | `POST /orders` | Place order / checkout |
+| Inventory Service | `POST /stock/reserve-bulk` | Internal bulk stock reservation |
+| Payment Service | `GET /payments/order/{orderId}` | Get payment by order |
+| Delivery Service | `GET /deliveries/{orderId}` | Get assigned delivery |
+| Tracking Service | `GET /tracking/{orderId}` | Get latest rider location |
+| Tracking Service | `POST /tracking/update` | Delivery partner location update |
 
 ---
 
-## 📡 API Reference
+## 📊 Admin and Frontend Features
 
-### Authentication (`/auth`)
+| Role | Features |
+|---|---|
+| Customer | Browse products, cart, checkout, order history, order details, live tracking |
+| Admin | Order management, inventory view, delivery partner management, analytics dashboard |
+| Delivery Partner | Assigned deliveries, availability update, delivery status update, location update |
 
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/auth/signup` | Register new user | Public |
-| POST | `/auth/login` | Login with email + password | Public |
-| POST | `/auth/send-otp` | Send OTP to phone | Public |
-| POST | `/auth/verify-otp` | Verify OTP, get JWT | Public |
-| GET | `/admin/users/summary` | User KPI counts | ADMIN |
+Frontend live tracking includes:
 
-### Orders (`/orders`)
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/orders` | Place new order | CUSTOMER |
-| GET | `/orders/{id}` | Get order by ID | CUSTOMER, ADMIN |
-| GET | `/orders/all` | Get all orders | ADMIN |
-| GET | `/orders` | Paginated + filtered orders | CUSTOMER, ADMIN |
-| PUT | `/orders/{id}/status` | Update order status | ADMIN, DELIVERY_PARTNER |
-| PUT | `/orders/{id}/cancel` | Cancel order | CUSTOMER, ADMIN |
-| GET | `/orders/analytics/summary` | Order KPIs | ADMIN |
-| GET | `/orders/analytics/status-breakdown` | Status counts | ADMIN |
-
-### Inventory (`/stock`, `/inventory`)
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| GET | `/stock/{productId}` | Get stock level | ADMIN |
-| PUT | `/stock/{productId}/add` | Add stock | ADMIN |
-| POST | `/stock/reserve-bulk` | Atomic stock reservation | Internal (Feign) |
-| GET | `/inventory/analytics/stock-summary` | All stock with low-stock flags | ADMIN |
-
-### Delivery (`/deliveries`)
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| GET | `/deliveries` | All deliveries | ADMIN |
-| GET | `/deliveries/{orderId}` | Get delivery by order | CUSTOMER, ADMIN |
-| PATCH | `/deliveries/{id}/status` | Update delivery status | DELIVERY_PARTNER |
-| POST | `/deliveries/assign` | Manual partner assignment | Internal (Feign) |
-| GET | `/deliveries/analytics/partner-summary` | Fleet KPIs | ADMIN |
-
-### Tracking (`/tracking`)
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/tracking/update` | Post GPS coordinates | DELIVERY_PARTNER |
-| GET | `/tracking/{orderId}` | Latest rider location | CUSTOMER |
-| GET | `/tracking/{orderId}/history` | Full route history | CUSTOMER |
-
-### Payments (`/payments`)
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| GET | `/payments/all` | All transactions | ADMIN |
-| GET | `/payments/order/{orderId}` | Payment by order | CUSTOMER, ADMIN |
-| GET | `/payments/user/{userId}` | User payment history | CUSTOMER |
-| POST | `/payments/pay/{orderId}` | Manual Pay Now trigger | CUSTOMER |
-| GET | `/payments/analytics/summary` | Payment KPIs | ADMIN |
+- customer delivery location
+- rider marker
+- route polyline
+- auto-refresh every 3 seconds
 
 ---
 
-## 🗄 Database Schema
+## 🧭 Architectural Decisions
 
-### Stock Table (with Optimistic Locking)
-
-```sql
-CREATE TABLE stock (
-    id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-    product_id         BIGINT NOT NULL,
-    quantity           INT,              -- Physical stock in warehouse
-    reserved_quantity  INT,              -- Locked during order processing
-    updated_at         DATETIME,
-    version            BIGINT DEFAULT 0  -- @Version field for Optimistic Lock
-);
-```
-
-### Orders Table (with Delivery Coordinates)
-
-```sql
-CREATE TABLE orders (
-    id                  BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id             BIGINT NOT NULL,
-    user_email          VARCHAR(255),
-    total_amount        DOUBLE,
-    status              VARCHAR(20),
-    delivery_slot       VARCHAR(30),
-    delivery_latitude   DOUBLE,           -- Customer GPS for Haversine
-    delivery_longitude  DOUBLE,
-    created_at          DATETIME
-);
-```
-
-### Delivery Partners Table (with GPS)
-
-```sql
-CREATE TABLE delivery_partners (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name        VARCHAR(255),
-    phone       VARCHAR(50),
-    status      VARCHAR(20),    -- AVAILABLE / BUSY
-    latitude    DOUBLE,         -- Partner GPS for Haversine
-    longitude   DOUBLE,
-    created_at  DATETIME
-);
-```
-
----
-
-## 🎨 Frontend Pages
-
-| Role | Pages | Count |
+| Area | Decision | Rationale |
 |---|---|---|
-| Public | Login, Register | 2 |
-| Customer | Home, Product Detail, Cart, Place Order, My Orders, Order Detail, Track Order | 7 |
-| Delivery Partner | Partner Dashboard, My Deliveries, Availability, Update Location | 4 |
-| Admin | Dashboard Analytics, All Orders, Inventory, Delivery Partners | 4 |
-| **Total** | | **17** |
+| Service architecture | Domain-aligned microservices | Auth, catalog, cart, inventory, order, payment, delivery, tracking, and notification are separated for independent ownership and scalability. |
+| Data ownership | Database-per-service | Each service owns its schema and data model, reducing tight coupling between services. |
+| Critical checkout dependency | Synchronous Inventory call using OpenFeign | Stock reservation must return an immediate success or failure response before confirming an order. |
+| Downstream workflows | Kafka-based asynchronous processing | Payment, delivery, tracking, and notifications are decoupled from the checkout request lifecycle. |
+| Inventory concurrency | Optimistic locking with `@Version` | Prevents overselling while avoiding long-held database locks during normal checkout traffic. |
+| Delivery assignment | Haversine + Strategy Pattern | Enables location-based rider selection and allows new assignment strategies to be added with minimal changes. |
+| Live tracking | 3-second polling | Keeps the tracking implementation simple while still providing near-real-time location updates. |
+| Security boundary | Gateway-level JWT/RBAC | Centralizes authentication and authorization before requests reach internal services. |
 
 ---
 
-## 🧩 Design Patterns
+## 🔮 Future Improvements
 
-| Pattern | Implementation | Location |
-|---|---|---|
-| **Strategy** | `DeliveryAssignmentStrategy` interface with `NearestPartnerStrategy` and `FirstAvailableStrategy` | `delivery-service/strategy/` |
-| **Proxy** | `ExternalServiceProxy` wraps Feign clients with Circuit Breaker | `order-service/service/` |
-| **Repository** | Spring Data JPA interfaces for all DB operations | All services |
-| **Builder** | Lombok `@Builder` on all entities and events | All services |
-| **Observer** | Kafka producer-consumer chain for order lifecycle events | Kafka topics |
-
----
-
-## 🔒 Security
-
-- **Stateless JWT Authentication** — No server-side sessions, horizontally scalable
-- **Role-Based Access Control** — `CUSTOMER`, `ADMIN`, `DELIVERY_PARTNER` enforced at API Gateway
-- **Gateway-Level JWT Validation** — Single enforcement point before routing to any service
-- **CORS Configuration** — Allows frontend on localhost:5173 only
-- **Environment Variables** — JWT secret and DB credentials in `.env`, never committed to Git
-- **BCrypt Password Hashing** — Standard strength-10 bcrypt for all passwords
-- **OTP Authentication** — Twilio Verify API for phone-based authentication
+- Integrate a real payment gateway such as Razorpay or Stripe.
+- Add WebSocket or Server-Sent Events for live tracking.
+- Add distributed tracing using correlation IDs.
+- Add centralized logging and observability dashboards.
+- Add full Docker Compose setup for all services.
+- Add Redis caching for product catalog and rider-location reads.
+- Add more integration tests for checkout, stock reservation, and Kafka workflows.
+- Add dead-letter topics for failed Kafka event processing.
 
 ---
 
-## 📊 Admin Dashboard Features
+## 👤 Author
 
-| Section | Chart Type | Data Source |
-|---|---|---|
-| Order KPIs | Stat cards with sparklines | `GET /orders/analytics/summary` |
-| 7-Day Order Trend | Area chart (Recharts) | `GET /orders/all` (grouped by date) |
-| Order Status | Donut chart (Recharts PieChart) | `GET /orders/analytics/status-breakdown` |
-| Inventory Levels | Horizontal bar chart with danger zone | `GET /inventory/analytics/stock-summary` |
-| Fleet Availability | Donut chart + fleet grid cards | `GET /deliveries/analytics/partner-summary` |
-| Payment Summary | Stat cards | `GET /payments/analytics/summary` |
-| Recent Orders | Filterable table with status badges | `GET /orders/all` |
+**Vivek Joshi**  
+M.Tech CSE, International Institute of Information Technology Bangalore
 
-All data auto-refreshes every 30 seconds. Manual sync available via "Force Sync" button.
-
----
-
-## 📁 Project Structure
-
-```
-ordereasy/
-├── backend/
-│   ├── discovery-server/          # Eureka registry
-│   ├── api-gateway/               # Spring Cloud Gateway + JWT filter
-│   ├── auth-service/              # Auth, JWT, Twilio OTP
-│   ├── product-service/           # Product catalog
-│   ├── cart-service/              # Shopping cart
-│   ├── inventory-service/         # Stock management + Optimistic Lock
-│   ├── order-service/             # Order orchestration + Kafka producer
-│   ├── payment-service/           # Payment processing + idempotency
-│   ├── delivery-service/          # Partner assignment + Haversine
-│   ├── tracking-service/          # GPS coordinate logging
-│   └── notification-service/      # Async notifications
-├── frontend/
-│   ├── src/
-│   │   ├── api/                   # Axios instances + API functions
-│   │   ├── components/            # Reusable UI components
-│   │   ├── context/               # AuthContext, CartContext
-│   │   ├── pages/
-│   │   │   ├── auth/              # Login, Register
-│   │   │   ├── customer/          # 7 customer pages
-│   │   │   ├── delivery/          # 4 rider pages
-│   │   │   └── admin/             # 4 admin pages
-│   │   ├── routes/                # Route guards per role
-│   │   └── utils/                 # Formatters, constants
-│   └── package.json
-├── infrastructure/
-│   └── kafka/
-│       └── docker-compose.yml     # Kafka + Zookeeper
-├── docs/
-│   └── DECISIONS.md               # Detailed architectural decisions
-├── .env.example                   # Template for environment variables
-├── start-all.sh                   # One-command startup script
-├── stop-all.sh                    # Graceful shutdown script
-└── status-check.sh                # Health check for all services
-```
-
----
-
-## 🤝 Author
-
-**Vivek Joshi**
-MTech Computer Science — IIIT Bangalore
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-vivekjoshi18-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/vivekjoshi18/)
-[![GitHub](https://img.shields.io/badge/GitHub-vivekvj18-181717?style=for-the-badge&logo=github)](https://github.com/vivekvj18)
+- LinkedIn: `linkedin.com/in/vivekjoshi18/`
+- GitHub: `github.com/vivekvj18`
 
 ---
 
 <div align="center">
 
-**OrderEasy** — A production-grade Quick Commerce backend built with real engineering decisions.
-
-*Every design decision in this project reflects a real production challenge in Q-Commerce systems.*
+**OrderEasy** — A quick-commerce backend project focused on real-world backend architecture and engineering decisions.
 
 </div>
