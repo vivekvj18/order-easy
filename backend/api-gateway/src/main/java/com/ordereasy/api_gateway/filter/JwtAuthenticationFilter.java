@@ -123,12 +123,14 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             }
         }
 
-        // Strip any client-supplied spoofable headers, then inject verified values from JWT
+        // Strip any client-supplied spoofable headers, then inject verified values from JWT.
+        // X-Internal-Service is also stripped — clients must never impersonate internal services.
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                 .headers(headers -> {
                     headers.remove("X-User-Id");
                     headers.remove("X-User-Role");
                     headers.remove("X-User-Email");
+                    headers.remove("X-Internal-Service");   // never forward — only internal Feign adds this
                     if (userId != null) headers.add("X-User-Id",    userId);
                     if (role   != null) headers.add("X-User-Role",  role);
                     if (email  != null) headers.add("X-User-Email", email);
