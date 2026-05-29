@@ -60,8 +60,11 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             return onError(exchange, "Invalid or Expired JWT Token", HttpStatus.UNAUTHORIZED);
         }
 
-        // ROLE EXTRACT
-        String role = claims.get("role", String.class);
+        // CLAIMS EXTRACT — subject = email; userId is a separate custom claim
+        String role  = claims.get("role", String.class);
+        Object userIdObj = claims.get("userId");
+        String userId = userIdObj != null ? String.valueOf(userIdObj) : null;
+        String email  = claims.getSubject();
 
         // CUSTOMER rules (Riders allowed to update status)
         if (path.startsWith("/orders")) {
@@ -120,7 +123,18 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
             }
         }
 
-        return chain.filter(exchange);
+        // Strip any client-supplied spoofable headers, then inject verified values from JWT
+        ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                .headers(headers -> {
+                    headers.remove("X-User-Id");
+                    headers.remove("X-User-Role");
+                    headers.remove("X-User-Email");
+                    if (userId != null) headers.add("X-User-Id",    userId);
+                    if (role   != null) headers.add("X-User-Role",  role);
+                    if (email  != null) headers.add("X-User-Email", email);
+                })
+                .build();
+        return chain.filter(exchange.mutate().request(mutatedRequest).build());
 
     }
 

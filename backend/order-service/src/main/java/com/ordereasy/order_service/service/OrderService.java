@@ -16,6 +16,7 @@ import com.ordereasy.order_service.event.OrderCancelledEvent;
 import com.ordereasy.order_service.event.OrderCreatedEvent;
 import com.ordereasy.order_service.event.OrderItemEvent;
 import com.ordereasy.order_service.event.OrderStatusUpdatedEvent;
+import com.ordereasy.order_service.exception.AccessDeniedException;
 import com.ordereasy.order_service.exception.OrderNotFoundException;
 import com.ordereasy.order_service.feign.InventoryFeignClient;
 import com.ordereasy.order_service.feign.CartFeignClient;
@@ -178,9 +179,14 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse cancelOrder(Long id) {
+    public OrderResponse cancelOrder(Long id, Long callerUserId, String callerRole) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
+
+        // Object-level authorization: CUSTOMER can cancel only own orders
+        if ("CUSTOMER".equals(callerRole) && !order.getUserId().equals(callerUserId)) {
+            throw new AccessDeniedException("Access denied: You can only cancel your own orders");
+        }
 
         String oldStatus = order.getStatus().name();
         order.setStatus(OrderStatus.CANCELLED);
@@ -232,9 +238,15 @@ public class OrderService {
                 .collect(Collectors.toList());
     }
 
-    public OrderResponse getOrderById(Long id) {
+    public OrderResponse getOrderById(Long id, Long callerUserId, String callerRole) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new OrderNotFoundException(id));
+
+        // Object-level authorization: CUSTOMER can view only own orders
+        if ("CUSTOMER".equals(callerRole) && !order.getUserId().equals(callerUserId)) {
+            throw new AccessDeniedException("Access denied: You can only view your own orders");
+        }
+
         return mapToResponse(order);
     }
 

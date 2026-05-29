@@ -46,6 +46,20 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+    // ✅ Object-level authorization failure → 403 Forbidden
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDeniedException(
+            AccessDeniedException ex) {
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", 403);
+        response.put("error", "Access Denied");
+        response.put("message", ex.getMessage());
+        response.put("timestamp", LocalDateTime.now().toString());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
     // ✅ When Inventory/Delivery Service returns a non-2xx response via Feign,
     //    extract the real message from the response body so users get a meaningful reason
     //    (e.g. "Insufficient stock" or "Stock not found for product id: X") instead of
