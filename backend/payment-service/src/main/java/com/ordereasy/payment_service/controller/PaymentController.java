@@ -58,10 +58,11 @@ public class PaymentController {
     @PostMapping("/pay/{orderId}")
     public ResponseEntity<Payment> initiatePayment(
             @PathVariable Long orderId,
-            @RequestBody PaymentRequest request) {
+            @RequestBody PaymentRequest request,
+            @RequestHeader(value = "X-Idempotency-Key", required = false) String idempotencyKey) {
         request.setOrderId(orderId);
-        log.info("Pay Now triggered for orderId: {}", orderId);
-        Payment payment = paymentService.initiatePayment(request);
+        log.info("Pay Now triggered for orderId: {}, idempotencyKey: {}", orderId, idempotencyKey);
+        Payment payment = paymentService.initiatePayment(request, idempotencyKey);
         return ResponseEntity.ok(payment);
     }
 

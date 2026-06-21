@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order,Long> {
 
@@ -23,6 +24,12 @@ public interface OrderRepository extends JpaRepository<Order,Long> {
     Page<Order> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate, Pageable pageable);
 
     long countByStatus(OrderStatus status);
+
+    /**
+     * Finds orders in a given status whose createdAt is older than the provided cutoff.
+     * Used by the ReservationExpiryScheduler to find stale PENDING_PAYMENT orders.
+     */
+    List<Order> findByStatusAndCreatedAtBefore(OrderStatus status, LocalDateTime cutoff);
 
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0.0) FROM Order o WHERE o.status <> 'CANCELLED'")
     Double sumTotalRevenue();

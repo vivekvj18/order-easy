@@ -6,7 +6,13 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "payments")
+@Table(
+        name = "payments",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_payment_idempotency_key",
+                columnNames = "idempotency_key"
+        )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,4 +35,12 @@ public class Payment {
     private String transactionId;
 
     private LocalDateTime createdAt;
+
+    /**
+     * Client-supplied idempotency key (UUID recommended).
+     * Nullable — Kafka-driven internal payments do not carry a key.
+     * A unique constraint prevents duplicate rows for the same client key.
+     */
+    @Column(name = "idempotency_key", nullable = true)
+    private String idempotencyKey;
 }

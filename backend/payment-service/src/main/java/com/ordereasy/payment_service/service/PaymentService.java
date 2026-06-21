@@ -5,10 +5,12 @@ import com.ordereasy.payment_service.dto.PaymentCompletedEvent;
 import com.ordereasy.payment_service.dto.PaymentRequest;
 import com.ordereasy.payment_service.dto.PaymentSummaryResponse;
 import com.ordereasy.payment_service.entity.Payment;
+import com.ordereasy.payment_service.exception.DuplicateIdempotencyKeyException;
 import com.ordereasy.payment_service.repository.PaymentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -67,42 +69,84 @@ public class PaymentService {
     }
 
     @Transactional
-    public Payment initiatePayment(PaymentRequest request) {
-        log.info("Manual payment initiated for orderId: {}", request.getOrderId());
+    public Payment initiatePayment(PaymentRequest request, String idempotencyKey) {
+        log.info("Manual payment initiated for orderId: {}, idempotencyKey: {}",
+                request.getOrderId(), idempotencyKey);
 
-        // Idempotency check
-        if (paymentRepository.findByOrderId(request.getOrderId()).isPresent()) {
-            log.warn("Payment already exists for orderId: {}", request.getOrderId());
-            return paymentRepository.findByOrderId(request.getOrderId()).get();
+        // ── Idempotency-key check (client-supplied key) ────────────────────
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            return paymentRepository.findByIdempotencyKey(idempotencyKey)
+                    .map(existing -> {
+                        if (!existing.getOrderId().equals(request.getOrderId())) {
+                            // Same key but different orderId → 409 Conflict
+                            log.warn("[Idempotency] Key '{}' already used for orderId: {} " +
+                                            "but new request is for orderId: {}. Returning 409.",
+                                    idempotencyKey, existing.getOrderId(), request.getOrderId());
+                            throw new DuplicateIdempotencyKeyException(
+                                    "Idempotency key '" + idempotencyKey +
+                                    "' already used for a different orderId: " + existing.getOrderId());
+                        }
+                        // Same key + same orderId → return existing, no duplicate event
+                        log.info("[Idempotency] Duplicate request detected for key: '{}', orderId: {}. " +
+                                "Returning existing payment id: {}", idempotencyKey,
+                                request.getOrderId(), existing.getId());
+                        return existing;
+                    })
+                    .orElseGet(() -> createAndPublishPayment(request, idempotencyKey));
         }
 
-        String transactionId = UUID.randomUUID().toString();
+        // ── Fallback: orderId-level idempotency (no key provided) ─────────
+        return paymentRepository.findByOrderId(request.getOrderId())
+                .orElseGet(() -> createAndPublishPayment(request, null));
+    }
 
-        Payment payment = Payment.builder()
-                .orderId(request.getOrderId())
-                .userId(request.getUserId())
-                .amount(request.getAmount())
-                .status("SUCCESS")
-                .transactionId(transactionId)
-                .createdAt(LocalDateTime.now())
-                .build();
+    /**
+     * Creates a new Payment row, publishes payment-completed, and returns the saved entity.
+     * If a DB unique-constraint violation occurs (race condition on idempotency key),
+     * fetches and returns the already-committed row — no duplicate event is published.
+     */
+    private Payment createAndPublishPayment(PaymentRequest request, String idempotencyKey) {
+        try {
+            String transactionId = UUID.randomUUID().toString();
 
-        Payment saved = paymentRepository.save(payment);
+            Payment payment = Payment.builder()
+                    .orderId(request.getOrderId())
+                    .userId(request.getUserId())
+                    .amount(request.getAmount())
+                    .status("SUCCESS")
+                    .transactionId(transactionId)
+                    .createdAt(LocalDateTime.now())
+                    .idempotencyKey(idempotencyKey)
+                    .build();
 
-        PaymentCompletedEvent completedEvent = PaymentCompletedEvent.builder()
-                .orderId(request.getOrderId())
-                .userId(request.getUserId())
-                .userEmail(request.getUserEmail())
-                .amount(request.getAmount())
-                .status("SUCCESS")
-                .transactionId(transactionId)
-                .build();
+            Payment saved = paymentRepository.save(payment);
 
-        kafkaTemplate.send("payment-completed", completedEvent);
-        log.info("Payment SUCCESS for orderId: {}, txnId: {}",
-                request.getOrderId(), transactionId);
+            PaymentCompletedEvent completedEvent = PaymentCompletedEvent.builder()
+                    .orderId(request.getOrderId())
+                    .userId(request.getUserId())
+                    .userEmail(request.getUserEmail())
+                    .amount(request.getAmount())
+                    .status("SUCCESS")
+                    .transactionId(transactionId)
+                    .build();
 
-        return saved;
+            kafkaTemplate.send("payment-completed", completedEvent);
+            log.info("[Payment] SUCCESS for orderId: {}, txnId: {}, idempotencyKey: {}",
+                    request.getOrderId(), transactionId, idempotencyKey);
+
+            return saved;
+
+        } catch (DataIntegrityViolationException ex) {
+            // Race condition: another request with the same idempotency key committed first
+            log.warn("[Idempotency] Unique constraint violation for key: '{}'. " +
+                    "Fetching already-committed payment for orderId: {}",
+                    idempotencyKey, request.getOrderId());
+            return paymentRepository.findByIdempotencyKey(idempotencyKey)
+                    .orElseGet(() -> paymentRepository.findByOrderId(request.getOrderId())
+                            .orElseThrow(() -> new RuntimeException(
+                                    "Payment not found after constraint violation for orderId: "
+                                    + request.getOrderId())));
+        }
     }
 
     public PaymentSummaryResponse getPaymentSummary() {

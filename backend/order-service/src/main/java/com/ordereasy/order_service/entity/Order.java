@@ -39,6 +39,8 @@ public class Order {
 
     private LocalDateTime createdAt;
 
+    private LocalDateTime updatedAt;
+
     @Column(name = "delivery_latitude")
     private Double deliveryLatitude;
 

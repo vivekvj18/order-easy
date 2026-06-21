@@ -104,17 +104,18 @@ public class OrderService {
             );
         }
 
-        // ── Step 4: Build and save order as CONFIRMED ───────────────────────
+        // ── Step 4: Build and save order as PENDING_PAYMENT ───────────────────
         Order order = Order.builder()
                 .userId(request.getUserId())
                 .userEmail(request.getUserEmail())
                 .totalAmount(totalAmount)
-                .status(OrderStatus.CONFIRMED)
+                .status(OrderStatus.PENDING_PAYMENT)
                 .deliverySlot(request.getDeliverySlot())
                 .deliveryAddress(request.getDeliveryAddress())
                 .deliveryLatitude(request.getDeliveryLatitude())
                 .deliveryLongitude(request.getDeliveryLongitude())
                 .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .items(items)
                 .build();
 
@@ -190,6 +191,7 @@ public class OrderService {
 
         String oldStatus = order.getStatus().name();
         order.setStatus(OrderStatus.CANCELLED);
+        order.setUpdatedAt(LocalDateTime.now());
         Order savedOrder = orderRepository.save(order);
 
         List<OrderItemEvent> itemEvents = savedOrder.getItems().stream()
@@ -218,6 +220,7 @@ public class OrderService {
 
         String oldStatus = order.getStatus().name();
         order.setStatus(status);
+        order.setUpdatedAt(LocalDateTime.now());
         Order savedOrder = orderRepository.save(order);
 
         OrderStatusUpdatedEvent event = new OrderStatusUpdatedEvent();
@@ -315,7 +318,7 @@ public class OrderService {
     public OrderAnalyticsSummaryResponse getAnalyticsSummary() {
         LocalDateTime startOfDay = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
         long totalOrders = orderRepository.count();
-        long confirmed = orderRepository.countByStatus(OrderStatus.CONFIRMED);
+        long confirmed = orderRepository.countByStatus(OrderStatus.PAYMENT_CONFIRMED);
         long delivered = orderRepository.countByStatus(OrderStatus.DELIVERED);
         long cancelled = orderRepository.countByStatus(OrderStatus.CANCELLED);
         Double totalRevenue = orderRepository.sumTotalRevenue();
@@ -334,12 +337,12 @@ public class OrderService {
     }
 
     public List<OrderStatusBreakdownResponse> getAnalyticsStatusBreakdown() {
-        long confirmed = orderRepository.countByStatus(OrderStatus.CONFIRMED);
+        long confirmed = orderRepository.countByStatus(OrderStatus.PAYMENT_CONFIRMED);
         long delivered = orderRepository.countByStatus(OrderStatus.DELIVERED);
         long cancelled = orderRepository.countByStatus(OrderStatus.CANCELLED);
 
         return List.of(
-                new OrderStatusBreakdownResponse("CONFIRMED", confirmed),
+                new OrderStatusBreakdownResponse("PAYMENT_CONFIRMED", confirmed),
                 new OrderStatusBreakdownResponse("DELIVERED", delivered),
                 new OrderStatusBreakdownResponse("CANCELLED", cancelled)
         );

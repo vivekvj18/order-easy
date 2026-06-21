@@ -8,9 +8,11 @@ import com.ordereasy.delivery_service.entity.Delivery;
 import com.ordereasy.delivery_service.entity.DeliveryPartner;
 import com.ordereasy.delivery_service.entity.DeliveryStatus;
 import com.ordereasy.delivery_service.entity.PartnerStatus;
+import com.ordereasy.delivery_service.event.DeliveryStatusEvent;
 import com.ordereasy.delivery_service.event.OrderCreatedEvent;
 import com.ordereasy.delivery_service.event.PaymentCompletedEvent;
 import com.ordereasy.delivery_service.event.OrderItemEvent;
+import com.ordereasy.delivery_service.kafka.DeliveryKafkaProducer;
 import com.ordereasy.delivery_service.repository.DeliveryPartnerRepository;
 import com.ordereasy.delivery_service.repository.DeliveryRepository;
 import com.ordereasy.delivery_service.strategy.DeliveryAssignmentStrategy;
@@ -29,13 +31,16 @@ public class DeliveryService {
     private final DeliveryPartnerRepository partnerRepository;
     private final DeliveryRepository deliveryRepository;
     private final DeliveryAssignmentStrategy assignmentStrategy;
+    private final DeliveryKafkaProducer deliveryKafkaProducer;
 
     public DeliveryService(DeliveryPartnerRepository partnerRepository,
                            DeliveryRepository deliveryRepository,
-                           DeliveryAssignmentStrategy assignmentStrategy) {
+                           DeliveryAssignmentStrategy assignmentStrategy,
+                           DeliveryKafkaProducer deliveryKafkaProducer) {
         this.partnerRepository = partnerRepository;
         this.deliveryRepository = deliveryRepository;
         this.assignmentStrategy = assignmentStrategy;
+        this.deliveryKafkaProducer = deliveryKafkaProducer;
     }
 
     /**
@@ -205,6 +210,18 @@ public class DeliveryService {
         }
 
         Delivery updatedDelivery = deliveryRepository.save(delivery);
+
+        // Publish delivery-status Kafka event so Order Service can sync order status
+        DeliveryStatusEvent event = DeliveryStatusEvent.builder()
+                .orderId(updatedDelivery.getOrderId())
+                .deliveryId(updatedDelivery.getId())
+                .status(status.name())
+                .timestamp(LocalDateTime.now())
+                .build();
+        deliveryKafkaProducer.sendDeliveryStatusEvent(event);
+        log.info("[Delivery] Status updated to {} for deliveryId={}, orderId={}. Event published.",
+                status, deliveryId, updatedDelivery.getOrderId());
+
         return mapToResponse(updatedDelivery);
     }
 
