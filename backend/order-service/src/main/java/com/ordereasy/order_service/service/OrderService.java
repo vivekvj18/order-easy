@@ -83,6 +83,7 @@ public class OrderService {
         }
 
         // ── Step 1: Build bulk stock reservation request ────────────────────
+        // Include user delivery coordinates for dark store selection (Phase 0).
         List<StockReservationRequest.StockItem> stockItems = items.stream()
                 .map(item -> StockReservationRequest.StockItem.builder()
                         .productId(item.getProductId())
@@ -91,13 +92,20 @@ public class OrderService {
                 .collect(Collectors.toList());
 
         StockReservationRequest stockRequest = StockReservationRequest.builder()
+                .userLatitude(request.getDeliveryLatitude())
+                .userLongitude(request.getDeliveryLongitude())
                 .items(stockItems)
                 .build();
 
-        // ── Step 2: Reserve stock (Protected by Circuit Breaker) ──────────────
+        // ── Step 2: Reserve stock + dark store selection (Protected by Circuit Breaker) ──
+        // Inventory Service performs:
+        //   Phase 0: Select nearest fulfillable dark store.
+        //   Phase 1: Validate all items in selected store.
+        //   Phase 2: Increment reservedQuantity in selected store.
+        // Returns darkStoreId + darkStoreName + coords on success.
         StockReservationResponse stockResponse = externalServiceProxy.reserveStockBulk(stockRequest);
 
-        // ── Step 3: Reject immediately if stock unavailable ─────────────────
+        // ── Step 3: Reject immediately if stock unavailable or no dark store found ──
         if (stockResponse == null || !stockResponse.isSuccess()) {
             throw new RuntimeException(
                     stockResponse != null ? stockResponse.getMessage() : "Stock reservation failed"
@@ -105,6 +113,7 @@ public class OrderService {
         }
 
         // ── Step 4: Build and save order as PENDING_PAYMENT ───────────────────
+        // Persist the selected dark store details so the order knows its fulfillment source.
         Order order = Order.builder()
                 .userId(request.getUserId())
                 .userEmail(request.getUserEmail())
@@ -114,6 +123,10 @@ public class OrderService {
                 .deliveryAddress(request.getDeliveryAddress())
                 .deliveryLatitude(request.getDeliveryLatitude())
                 .deliveryLongitude(request.getDeliveryLongitude())
+                .darkStoreId(stockResponse.getDarkStoreId())
+                .darkStoreName(stockResponse.getDarkStoreName())
+                .darkStoreLatitude(stockResponse.getDarkStoreLatitude())
+                .darkStoreLongitude(stockResponse.getDarkStoreLongitude())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .items(items)
@@ -122,7 +135,10 @@ public class OrderService {
         items.forEach(item -> item.setOrder(order));
         Order savedOrder = orderRepository.save(order);
 
-        // ── Step 5: Publish order-created event ──────────────────────────────
+        // ── Step 5: Publish order-created event with dark store details ───────
+        // Dark store details are propagated so Payment Service can include them
+        // in payment-completed, allowing Inventory Service to finalize at
+        // (darkStoreId + productId) level without querying the Order DB.
         List<OrderItemEvent> itemEvents = savedOrder.getItems().stream()
                 .map(item -> {
                     OrderItemEvent e = new OrderItemEvent();
@@ -141,6 +157,10 @@ public class OrderService {
         event.setDeliverySlot(savedOrder.getDeliverySlot());
         event.setDeliveryLatitude(request.getDeliveryLatitude());
         event.setDeliveryLongitude(request.getDeliveryLongitude());
+        event.setDarkStoreId(savedOrder.getDarkStoreId());
+        event.setDarkStoreName(savedOrder.getDarkStoreName());
+        event.setDarkStoreLatitude(savedOrder.getDarkStoreLatitude());
+        event.setDarkStoreLongitude(savedOrder.getDarkStoreLongitude());
 
         try {
             kafkaProducer.sendOrderCreatedEvent(event);
@@ -160,9 +180,8 @@ public class OrderService {
 
     /**
      * Best-effort stock release — called when delivery assignment fails after
-     * stock was already reserved. Loops through each item and calls the
-     * existing single-item /stock/release endpoint on Inventory Service.
-     * Errors are swallowed (logged) since the primary failure is already handled.
+     * stock was already reserved. Errors are swallowed since the primary failure
+     * is already handled.
      */
     private void releaseReservedStock(CreateOrderRequest request) {
         try {
@@ -207,6 +226,7 @@ public class OrderService {
         cancelEvent.setOrderId(savedOrder.getId());
         cancelEvent.setUserId(savedOrder.getUserId());
         cancelEvent.setUserEmail(savedOrder.getUserEmail());
+        cancelEvent.setDarkStoreId(savedOrder.getDarkStoreId()); // needed for stock release
         cancelEvent.setItems(itemEvents);
         kafkaProducer.sendOrderCancelledEvent(cancelEvent);
 
@@ -312,6 +332,10 @@ public class OrderService {
                 .deliveryAddress(order.getDeliveryAddress())
                 .deliveryLatitude(order.getDeliveryLatitude())
                 .deliveryLongitude(order.getDeliveryLongitude())
+                .darkStoreId(order.getDarkStoreId())
+                .darkStoreName(order.getDarkStoreName())
+                .darkStoreLatitude(order.getDarkStoreLatitude())
+                .darkStoreLongitude(order.getDarkStoreLongitude())
                 .build();
     }
 

@@ -5,10 +5,14 @@ export const DELIVERY_SLOTS = [
 ];
 
 export const ORDER_STATUSES = [
-  { value: 'CREATED',          label: 'Created',          color: 'blue'   },
-  { value: 'CONFIRMED',        label: 'Confirmed',        color: 'yellow' },
+  { value: 'PENDING_PAYMENT',  label: 'Pending Payment',  color: 'yellow' },
+  { value: 'PAYMENT_CONFIRMED',label: 'Payment Confirmed',color: 'blue'   },
+  { value: 'CONFIRMED',        label: 'Confirmed',        color: 'blue'   },
+  { value: 'SHIPPED',          label: 'Shipped',          color: 'blue'   },
+  { value: 'OUT_FOR_DELIVERY', label: 'Out for Delivery', color: 'orange' },
   { value: 'DELIVERED',        label: 'Delivered',        color: 'green'  },
   { value: 'CANCELLED',        label: 'Cancelled',        color: 'red'    },
+  { value: 'EXPIRED',          label: 'Expired',          color: 'gray'   },
 ];
 
 export const AVAILABILITY_STATUSES = [

@@ -7,11 +7,23 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Sent by Order Service to Inventory Service /stock/reserve-bulk.
+ *
+ * Now includes userLatitude and userLongitude so Inventory Service can
+ * perform Phase 0 (dark store selection) before the two-phase reservation.
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class StockReservationRequest {
+
+    /** User's delivery latitude — used to find nearest fulfillable dark store. */
+    private Double userLatitude;
+
+    /** User's delivery longitude — used to find nearest fulfillable dark store. */
+    private Double userLongitude;
 
     private List<StockItem> items;
 

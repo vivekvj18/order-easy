@@ -3,13 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Clock, Package, AlertTriangle } from 'lucide-react';
 import { getOrderById, cancelOrder } from '../../api/ordersApi';
 import { getDeliveryByOrderId } from '../../api/deliveryApi';
+import api from '../../api/axios';
 import StatusBadge from '../../components/StatusBadge';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { formatCurrency, formatDateTime, extractErrorMessage } from '../../utils/formatters';
 import { ORDER_STATUSES, DELIVERY_SLOTS } from '../../utils/constants';
 import toast from 'react-hot-toast';
 
-const STATUS_STEPS = ['CREATED', 'CONFIRMED', 'DELIVERED'];
+const STATUS_STEPS = ['PENDING_PAYMENT', 'PAYMENT_CONFIRMED', 'DELIVERED'];
 
 const OrderDetailPage = () => {
   const { id } = useParams();
@@ -18,6 +19,7 @@ const OrderDetailPage = () => {
   const [order, setOrder]   = useState(null);
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying]   = useState(false);
 
   useEffect(() => {
     const fetch = async () => {
@@ -77,12 +79,63 @@ const OrderDetailPage = () => {
     }
   };
 
+  const handlePayment = async () => {
+    if (!order) return;
+    setPaying(true);
+    try {
+      const idempotencyKey = `pay-key-${order.orderId}-${Date.now()}`;
+      const payload = {
+        orderId: order.orderId,
+        userId: order.userId,
+        userEmail: order.userEmail,
+        amount: order.totalAmount,
+        darkStoreId: order.darkStoreId,
+        deliverySlot: order.deliverySlot,
+        deliveryLatitude: order.deliveryLatitude,
+        deliveryLongitude: order.deliveryLongitude,
+        items: (order.items || []).map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+        })),
+      };
+
+      await api.post(`/payments/pay/${order.orderId}`, payload, {
+        headers: {
+          'X-Idempotency-Key': idempotencyKey,
+        }
+      });
+
+      toast.success('Payment completed successfully! 🎉');
+      
+      // Reload order details
+      const orderRes = await getOrderById(id);
+      setOrder(orderRes.data?.data || orderRes.data);
+      try {
+        const deliveryRes = await getDeliveryByOrderId(id);
+        setDelivery(deliveryRes.data?.data || deliveryRes.data);
+      } catch (err) {
+        // Safe to ignore if delivery not assigned yet
+      }
+    } catch (err) {
+      toast.error(extractErrorMessage(err));
+    } finally {
+      setPaying(false);
+    }
+  };
+
   if (loading) return <div className="flex justify-center py-24"><LoadingSpinner size="lg" /></div>;
   if (!order)  return null;
 
-  const currentStep  = STATUS_STEPS.indexOf(order.status);
-  const canCancel    = ['CREATED', 'CONFIRMED'].includes(order.status);
-  const canTrack     = ['CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.status);
+  // Determine current step index in visual status steps
+  let currentStep = 0;
+  if (['PAYMENT_CONFIRMED', 'CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY'].includes(order.status)) {
+    currentStep = 1;
+  } else if (order.status === 'DELIVERED') {
+    currentStep = 2;
+  }
+
+  const canCancel    = ['PENDING_PAYMENT', 'CREATED', 'CONFIRMED'].includes(order.status);
+  const canTrack     = ['PAYMENT_CONFIRMED', 'CONFIRMED', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED'].includes(order.status);
   const slotLabel    = DELIVERY_SLOTS.find((s) => s.value === order.deliverySlot)?.label || order.deliverySlot;
 
   return (
@@ -199,6 +252,21 @@ const OrderDetailPage = () => {
           )}
 
           <div className="flex flex-col gap-2 mt-2">
+            {order.status === 'PENDING_PAYMENT' && (
+              <button
+                onClick={handlePayment}
+                disabled={paying}
+                className="btn-primary w-full bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center gap-2 py-3 rounded-xl font-bold shadow-lg"
+              >
+                {paying ? (
+                  <span>Processing Payment...</span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    💳 Pay Now ({formatCurrency(order.totalAmount)})
+                  </span>
+                )}
+              </button>
+            )}
             {canTrack && (
               <>
                 <button

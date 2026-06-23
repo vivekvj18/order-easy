@@ -1,14 +1,17 @@
 com/ordereasy/payment_service/dto/PaymentCompletedEvent$PaymentCompletedEventBuilder.class
 com/ordereasy/payment_service/dto/OrderItemEvent$OrderItemEventBuilder.class
+com/ordereasy/payment_service/exception/DuplicateIdempotencyKeyException.class
 com/ordereasy/payment_service/dto/PaymentRequest.class
 com/ordereasy/payment_service/controller/PaymentController.class
 com/ordereasy/payment_service/dto/OrderCreatedEvent.class
 com/ordereasy/payment_service/dto/OrderItemEvent.class
+com/ordereasy/payment_service/config/SwaggerConfig.class
 com/ordereasy/payment_service/kafka/PaymentKafkaConsumer.class
 com/ordereasy/payment_service/entity/Payment$PaymentBuilder.class
 com/ordereasy/payment_service/dto/PaymentSummaryResponse$PaymentSummaryResponseBuilder.class
 com/ordereasy/payment_service/config/PaymentKafkaConfig.class
 com/ordereasy/payment_service/dto/PaymentSummaryResponse.class
+com/ordereasy/payment_service/exception/GlobalExceptionHandler.class
 com/ordereasy/payment_service/PaymentServiceApplication.class
 com/ordereasy/payment_service/service/PaymentService.class
 com/ordereasy/payment_service/repository/PaymentRepository.class

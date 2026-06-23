@@ -6,6 +6,14 @@ import lombok.Setter;
 
 import java.util.List;
 
+/**
+ * Published by Order Service to "order-created" Kafka topic.
+ * Consumed by Payment Service to initiate payment processing.
+ *
+ * Dark store fields are included so Payment Service can propagate them
+ * to the payment-completed event, allowing Inventory Service to finalize
+ * stock at the correct (darkStoreId + productId) level.
+ */
 @Getter
 @Setter
 public class OrderCreatedEvent {
@@ -17,4 +25,10 @@ public class OrderCreatedEvent {
     private DeliverySlot deliverySlot;
     private Double deliveryLatitude;   // customer's delivery location
     private Double deliveryLongitude;
+
+    /** Selected dark store for this order. Required for stock finalization. */
+    private Long darkStoreId;
+    private String darkStoreName;
+    private Double darkStoreLatitude;
+    private Double darkStoreLongitude;
 }

@@ -6,5 +6,6 @@ com/ordereasy/product_service/entity/Product.class
 com/ordereasy/product_service/dto/ProductResponse.class
 com/ordereasy/product_service/repository/ProductRepository.class
 com/ordereasy/product_service/service/ProductService.class
+com/ordereasy/product_service/config/SwaggerConfig.class
 com/ordereasy/product_service/controller/ProductController.class
 com/ordereasy/product_service/entity/Product$ProductBuilder.class

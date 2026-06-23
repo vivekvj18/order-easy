@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class StockSummaryResponse {
+    private Long darkStoreId;
+    private String darkStoreName;
     private Long productId;
     private Integer quantity;
     private Integer reservedQuantity;

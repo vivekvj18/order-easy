@@ -2,7 +2,6 @@ package com.ordereasy.inventory_service.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.ordereasy.inventory_service.dto.ReserveStockRequest;
 import com.ordereasy.inventory_service.event.OrderCancelledEvent;
 import com.ordereasy.inventory_service.event.PaymentCompletedEvent;
 import com.ordereasy.inventory_service.service.StockService;
@@ -15,11 +14,15 @@ import org.springframework.stereotype.Component;
  * Kafka consumer for inventory-related events.
  *
  * Listeners:
- *  - order-cancelled    → releases reserved stock (customer cancelled before payment)
- *  - payment-completed  → finalizes reserved stock (payment SUCCESS: deducts quantity)
+ *  - order-cancelled    → releases reserved stock in the selected dark store
+ *  - payment-completed  → finalizes stock in the selected dark store (deducts quantity)
  *
  * NOTE: order-created stock reservation was moved to synchronous Feign (Order Service
  * calls Inventory Service before saving the order). That listener no longer exists here.
+ *
+ * Dark store note:
+ *   Both events now carry darkStoreId so that stock operations are scoped to the
+ *   correct (darkStoreId + productId) row — not a global productId row.
  */
 @Component
 public class OrderKafkaConsumer {
@@ -41,15 +44,23 @@ public class OrderKafkaConsumer {
     public void handleOrderCancelled(String message) {
         try {
             OrderCancelledEvent event = objectMapper.readValue(message, OrderCancelledEvent.class);
-            log.info("[Inventory] order-cancelled event received for orderId: {}", event.getOrderId());
+            log.info("[Inventory] order-cancelled event received for orderId={}, darkStoreId={}",
+                    event.getOrderId(), event.getDarkStoreId());
 
-            event.getItems().forEach(item -> {
-                ReserveStockRequest request = new ReserveStockRequest();
-                request.setProductId(item.getProductId());
-                request.setQuantity(item.getQuantity());
-                stockService.releaseStock(request);
-                log.info("[Inventory] Released stock for productId={}, qty={}", item.getProductId(), item.getQuantity());
-            });
+            if (event.getDarkStoreId() == null) {
+                log.warn("[Inventory] order-cancelled event for orderId={} has no darkStoreId. " +
+                         "Cannot release stock — dark store context missing.", event.getOrderId());
+                return;
+            }
+
+            if (event.getItems() == null || event.getItems().isEmpty()) {
+                log.warn("[Inventory] order-cancelled event for orderId={} has no items. Skipping.", event.getOrderId());
+                return;
+            }
+
+            stockService.releaseReservedStockForOrder(event.getDarkStoreId(), event.getItems());
+            log.info("[Inventory] Released stock for orderId={} in darkStoreId={}",
+                    event.getOrderId(), event.getDarkStoreId());
 
         } catch (Exception e) {
             log.error("[Inventory] Failed to process order-cancelled event: {}", e.getMessage(), e);
@@ -61,26 +72,31 @@ public class OrderKafkaConsumer {
     public void handlePaymentCompleted(String message) {
         try {
             PaymentCompletedEvent event = objectMapper.readValue(message, PaymentCompletedEvent.class);
-            log.info("[Inventory] payment-completed event received for orderId: {}, status: {}",
-                    event.getOrderId(), event.getStatus());
+            log.info("[Inventory] payment-completed event received for orderId={}, status={}, darkStoreId={}",
+                    event.getOrderId(), event.getStatus(), event.getDarkStoreId());
 
             // Only finalize stock on payment SUCCESS
             if (!"SUCCESS".equals(event.getStatus())) {
-                log.warn("[Inventory] Payment status is '{}' for orderId: {}. " +
-                         "Skipping stock finalization.", event.getStatus(), event.getOrderId());
+                log.warn("[Inventory] Payment status is '{}' for orderId={}. Skipping stock finalization.",
+                        event.getStatus(), event.getOrderId());
                 return;
             }
 
             if (event.getItems() == null || event.getItems().isEmpty()) {
-                log.warn("[Inventory] payment-completed event for orderId: {} has no items. " +
-                         "Skipping stock finalization.", event.getOrderId());
+                log.warn("[Inventory] payment-completed event for orderId={} has no items. Skipping.", event.getOrderId());
                 return;
             }
 
-            log.info("[Inventory] Starting stock finalization for orderId: {}, {} item(s)",
-                    event.getOrderId(), event.getItems().size());
+            if (event.getDarkStoreId() == null) {
+                log.warn("[Inventory] payment-completed event for orderId={} has no darkStoreId. " +
+                         "Cannot finalize stock — dark store context missing.", event.getOrderId());
+                return;
+            }
 
-            stockService.finalizeReservedStock(event.getOrderId(), event.getItems());
+            log.info("[Inventory] Starting stock finalization for orderId={}, darkStoreId={}, {} item(s)",
+                    event.getOrderId(), event.getDarkStoreId(), event.getItems().size());
+
+            stockService.finalizeReservedStock(event.getOrderId(), event.getDarkStoreId(), event.getItems());
 
         } catch (Exception e) {
             log.error("[Inventory] Failed to process payment-completed event: {}", e.getMessage(), e);

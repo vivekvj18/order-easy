@@ -21,4 +21,10 @@ public class OrderResponse {
     private String deliveryAddress;
     private Double deliveryLatitude;
     private Double deliveryLongitude;
+
+    /** Dark store selected to fulfill this order. */
+    private Long darkStoreId;
+    private String darkStoreName;
+    private Double darkStoreLatitude;
+    private Double darkStoreLongitude;
 }

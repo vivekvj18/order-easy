@@ -47,6 +47,23 @@ public class Order {
     @Column(name = "delivery_longitude")
     private Double deliveryLongitude;
 
+    /**
+     * The dark store selected to fulfill this order.
+     * Populated after successful stock reservation at checkout.
+     * Delivery Service uses dark store coordinates as the pickup location.
+     */
+    @Column(name = "dark_store_id")
+    private Long darkStoreId;
+
+    @Column(name = "dark_store_name")
+    private String darkStoreName;
+
+    @Column(name = "dark_store_latitude")
+    private Double darkStoreLatitude;
+
+    @Column(name = "dark_store_longitude")
+    private Double darkStoreLongitude;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> items;
 }

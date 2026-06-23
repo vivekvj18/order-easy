@@ -50,7 +50,8 @@ public class PaymentService {
 
         paymentRepository.save(payment);
 
-        // Publish event
+        // Publish event — include dark store fields so Inventory can finalize
+        // at (darkStoreId + productId) level, not global productId level.
         PaymentCompletedEvent completedEvent = PaymentCompletedEvent.builder()
                 .orderId(event.getOrderId())
                 .userId(event.getUserId())
@@ -62,6 +63,10 @@ public class PaymentService {
                 .items(event.getItems())
                 .deliveryLatitude(event.getDeliveryLatitude())
                 .deliveryLongitude(event.getDeliveryLongitude())
+                .darkStoreId(event.getDarkStoreId())
+                .darkStoreName(event.getDarkStoreName())
+                .darkStoreLatitude(event.getDarkStoreLatitude())
+                .darkStoreLongitude(event.getDarkStoreLongitude())
                 .build();
 
         kafkaTemplate.send("payment-completed", completedEvent);
@@ -102,6 +107,12 @@ public class PaymentService {
 
     /**
      * Creates a new Payment row, publishes payment-completed, and returns the saved entity.
+     *
+     * Bug fix: PaymentCompletedEvent MUST include items + darkStoreId.
+     *   - items: Inventory Service finalizes stock per productId.
+     *   - darkStoreId: stock is now at (darkStoreId + productId), not global.
+     * Without them, Inventory's guards drop the event and reservedQuantity never clears.
+     *
      * If a DB unique-constraint violation occurs (race condition on idempotency key),
      * fetches and returns the already-committed row — no duplicate event is published.
      */
@@ -128,11 +139,16 @@ public class PaymentService {
                     .amount(request.getAmount())
                     .status("SUCCESS")
                     .transactionId(transactionId)
+                    .items(request.getItems())              // required: Inventory finalizes per item
+                    .darkStoreId(request.getDarkStoreId())  // required: dark-store-scoped deduction
+                    .deliverySlot(request.getDeliverySlot())
+                    .deliveryLatitude(request.getDeliveryLatitude())
+                    .deliveryLongitude(request.getDeliveryLongitude())
                     .build();
 
             kafkaTemplate.send("payment-completed", completedEvent);
-            log.info("[Payment] SUCCESS for orderId: {}, txnId: {}, idempotencyKey: {}",
-                    request.getOrderId(), transactionId, idempotencyKey);
+            log.info("[Payment] SUCCESS for orderId: {}, txnId: {}, idempotencyKey: {}, darkStoreId: {}",
+                    request.getOrderId(), transactionId, idempotencyKey, request.getDarkStoreId());
 
             return saved;
 

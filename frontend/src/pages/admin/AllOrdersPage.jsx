@@ -13,6 +13,8 @@ const OrderStatusBadge = ({ status }) => {
     DELIVERED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 dot-emerald',
     CANCELLED: 'bg-rose-500/10 text-rose-400 border-rose-500/20 dot-rose',
     CONFIRMED: 'bg-amber-500/10 text-amber-400 border-amber-500/20 dot-amber',
+    PENDING_PAYMENT: 'bg-amber-500/10 text-amber-400 border-amber-500/20 dot-amber',
+    PAYMENT_CONFIRMED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 dot-emerald',
     OUT_FOR_DELIVERY: 'bg-sky-500/10 text-sky-400 border-sky-500/20 dot-sky',
     SHIPPED: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 dot-indigo',
     CREATED: 'bg-slate-500/10 text-slate-400 border-slate-500/20 dot-slate',
@@ -22,6 +24,8 @@ const OrderStatusBadge = ({ status }) => {
     DELIVERED: 'text-emerald-400',
     CANCELLED: 'text-rose-400',
     CONFIRMED: 'text-amber-400',
+    PENDING_PAYMENT: 'text-amber-400',
+    PAYMENT_CONFIRMED: 'text-emerald-400',
     OUT_FOR_DELIVERY: 'text-sky-400',
     SHIPPED: 'text-indigo-400',
     CREATED: 'text-slate-400',
@@ -90,11 +94,12 @@ const AllOrdersPage = () => {
     }
   };
 
-  // Border mapping based on order status
   const getRowLeftBorder = (status) => {
     switch (status) {
       case 'DELIVERED': return 'border-l-4 border-emerald-500';
       case 'CANCELLED': return 'border-l-4 border-rose-500';
+      case 'PAYMENT_CONFIRMED': return 'border-l-4 border-emerald-500';
+      case 'PENDING_PAYMENT': return 'border-l-4 border-amber-500';
       case 'CONFIRMED': return 'border-l-4 border-amber-500';
       case 'OUT_FOR_DELIVERY': return 'border-l-4 border-sky-500';
       case 'SHIPPED': return 'border-l-4 border-indigo-500';

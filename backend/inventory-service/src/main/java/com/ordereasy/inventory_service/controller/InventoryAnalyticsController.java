@@ -35,6 +35,8 @@ public class InventoryAnalyticsController {
                     boolean lowStock = available < 10;
 
                     return StockSummaryResponse.builder()
+                            .darkStoreId(stock.getDarkStore() != null ? stock.getDarkStore().getId() : null)
+                            .darkStoreName(stock.getDarkStore() != null ? stock.getDarkStore().getName() : null)
                             .productId(stock.getProductId())
                             .quantity(quantity)
                             .reservedQuantity(reserved)

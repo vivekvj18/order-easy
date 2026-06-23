@@ -1,4 +1,5 @@
 /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/product-service/src/main/java/com/ordereasy/product_service/ProductServiceApplication.java
+/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/product-service/src/main/java/com/ordereasy/product_service/config/SwaggerConfig.java
 /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/product-service/src/main/java/com/ordereasy/product_service/controller/ProductController.java
 /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/product-service/src/main/java/com/ordereasy/product_service/dto/CreateProductRequest.java
 /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/product-service/src/main/java/com/ordereasy/product_service/dto/ProductResponse.java
