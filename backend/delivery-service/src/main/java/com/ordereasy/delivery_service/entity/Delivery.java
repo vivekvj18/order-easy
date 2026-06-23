@@ -44,6 +44,26 @@ public class Delivery {
     @Column(name = "delivery_longitude")
     private Double deliveryLongitude;
 
+    /**
+     * Total pickup-aware route distance: riderToDarkStore + darkStoreToCustomer (km).
+     * Populated by PickupAwareNearestPartnerStrategy.
+     */
     @Column(name = "assignment_distance_km")
     private Double assignmentDistanceKm;
+
+    // ── Dark store traceability ────────────────────────────────────────────
+    /** ID of the dark store that fulfills this order (pickup point). */
+    @Column(name = "dark_store_id")
+    private Long darkStoreId;
+
+    @Column(name = "dark_store_name")
+    private String darkStoreName;
+
+    /** Latitude of the dark store (pickup point). */
+    @Column(name = "pickup_latitude")
+    private Double pickupLatitude;
+
+    /** Longitude of the dark store (pickup point). */
+    @Column(name = "pickup_longitude")
+    private Double pickupLongitude;
 }

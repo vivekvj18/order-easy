@@ -162,10 +162,25 @@ public class OrderService {
         event.setDarkStoreLatitude(savedOrder.getDarkStoreLatitude());
         event.setDarkStoreLongitude(savedOrder.getDarkStoreLongitude());
 
-        try {
-            kafkaProducer.sendOrderCreatedEvent(event);
-        } catch (Exception e) {
-            System.err.println("Kafka event failed: " + e.getMessage());
+        if (org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive()) {
+            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        try {
+                            kafkaProducer.sendOrderCreatedEvent(event);
+                        } catch (Exception e) {
+                            System.err.println("Kafka event failed: " + e.getMessage());
+                        }
+                    }
+                }
+            );
+        } else {
+            try {
+                kafkaProducer.sendOrderCreatedEvent(event);
+            } catch (Exception e) {
+                System.err.println("Kafka event failed: " + e.getMessage());
+            }
         }
 
         // ── Step 6: Clear Cart (Best effort) ────────────────────────────────

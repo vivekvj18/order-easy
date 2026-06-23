@@ -97,6 +97,10 @@ public class CartService {
                                     .updatedAt(LocalDateTime.now())
                                     .build();
                             cartItemRepository.save(newItem);
+                            if (cart.getItems() == null) {
+                                cart.setItems(new java.util.ArrayList<>());
+                            }
+                            cart.getItems().add(newItem);
                             log.info("Added new CartItem — cartId: {}, productId: {}, qty: {}",
                                     cart.getId(), request.getProductId(), request.getQuantity());
                         }

@@ -40,4 +40,9 @@ public class PaymentRequest {
     /** Delivery coordinates — used by Delivery Service for drop-off routing. */
     private Double deliveryLatitude;
     private Double deliveryLongitude;
+
+    // ── Dark store coordinates for manual payment testing ───────────────────
+    private String darkStoreName;
+    private Double darkStoreLatitude;
+    private Double darkStoreLongitude;
 }

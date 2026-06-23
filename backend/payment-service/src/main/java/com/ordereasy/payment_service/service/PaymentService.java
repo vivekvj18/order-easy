@@ -144,11 +144,15 @@ public class PaymentService {
                     .deliverySlot(request.getDeliverySlot())
                     .deliveryLatitude(request.getDeliveryLatitude())
                     .deliveryLongitude(request.getDeliveryLongitude())
+                    .darkStoreName(request.getDarkStoreName())
+                    .darkStoreLatitude(request.getDarkStoreLatitude())
+                    .darkStoreLongitude(request.getDarkStoreLongitude())
                     .build();
 
             kafkaTemplate.send("payment-completed", completedEvent);
-            log.info("[Payment] SUCCESS for orderId: {}, txnId: {}, idempotencyKey: {}, darkStoreId: {}",
-                    request.getOrderId(), transactionId, idempotencyKey, request.getDarkStoreId());
+            log.info("[Payment] SUCCESS for orderId: {}, txnId: {}, idempotencyKey: {}, darkStoreId: {}, darkStoreName: {}, darkStoreLat: {}, darkStoreLon: {}",
+                    request.getOrderId(), transactionId, idempotencyKey, request.getDarkStoreId(),
+                    request.getDarkStoreName(), request.getDarkStoreLatitude(), request.getDarkStoreLongitude());
 
             return saved;
 

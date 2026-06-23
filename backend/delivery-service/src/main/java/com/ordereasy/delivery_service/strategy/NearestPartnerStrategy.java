@@ -10,6 +10,19 @@ import org.springframework.stereotype.Component;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Customer-centric nearest-partner strategy.
+ *
+ * <p>This strategy is kept as the {@code @Primary} implementation of
+ * {@link DeliveryAssignmentStrategy}. It is used by:
+ * <ul>
+ *   <li>{@code assignDeliveryForOrder} (Feign-based synchronous assignment)</li>
+ *   <li>Fallback path in {@code assignDelivery(OrderCreatedEvent)} if called directly</li>
+ * </ul>
+ *
+ * <p>For payment-triggered assignments, the {@link PickupAwareNearestPartnerStrategy}
+ * is used instead — it scores riders by the complete route: rider → dark store → customer.
+ */
 @Slf4j
 @Component
 @Primary

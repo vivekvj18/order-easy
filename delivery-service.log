@@ -1,0 +1,267 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.ordereasy:delivery-service >-------------------
+[INFO] Building  0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:4.0.5:run (default-cli) > test-compile @ delivery-service >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ delivery-service ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ delivery-service ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ delivery-service ---
+[INFO] skip non existing resourceDirectory /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/delivery-service/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ delivery-service ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:4.0.5:run (default-cli) < test-compile @ delivery-service <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:4.0.5:run (default-cli) @ delivery-service ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.0.5)
+
+2026-06-23T18:16:06.254+05:30  INFO 22592 --- [delivery-service] [  restartedMain] c.o.d.DeliveryServiceApplication         : Starting DeliveryServiceApplication using Java 21.0.10 with PID 22592 (/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/delivery-service/target/classes started by vivekjoshi in /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/delivery-service)
+2026-06-23T18:16:06.257+05:30  INFO 22592 --- [delivery-service] [  restartedMain] c.o.d.DeliveryServiceApplication         : No active profile set, falling back to 1 default profile: "default"
+2026-06-23T18:16:06.321+05:30  INFO 22592 --- [delivery-service] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-06-23T18:16:06.322+05:30  INFO 22592 --- [delivery-service] [  restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-06-23T18:16:07.422+05:30  INFO 22592 --- [delivery-service] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-23T18:16:07.553+05:30  INFO 22592 --- [delivery-service] [  restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 122 ms. Found 2 JPA repository interfaces.
+2026-06-23T18:16:07.974+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.cloud.context.scope.GenericScope     : BeanFactory id=aab3529e-3683-3322-8e61-54436a9b6b9c
+2026-06-23T18:16:08.501+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8087 (http)
+2026-06-23T18:16:08.519+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-23T18:16:08.519+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.20]
+2026-06-23T18:16:08.562+05:30  INFO 22592 --- [delivery-service] [  restartedMain] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 2240 ms
+2026-06-23T18:16:08.880+05:30  INFO 22592 --- [delivery-service] [  restartedMain] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-06-23T18:16:08.925+05:30  INFO 22592 --- [delivery-service] [  restartedMain] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.7.Final
+2026-06-23T18:16:09.305+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-23T18:16:09.336+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-23T18:16:09.665+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@45ca2808
+2026-06-23T18:16:09.667+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-23T18:16:09.747+05:30  INFO 22592 --- [delivery-service] [  restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:mysql://localhost:3306/ordereasy_delivery_db?createDatabaseIfNotExist=true]
+	Database driver: MySQL Connector/J
+	Database dialect: MySQLDialect
+	Database version: 8.0.45
+	Default catalog/schema: ordereasy_delivery_db/undefined
+	Autocommit mode: undefined/unknown
+	Isolation level: REPEATABLE_READ [default REPEATABLE_READ]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-06-23T18:16:10.588+05:30  INFO 22592 --- [delivery-service] [  restartedMain] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-23T18:16:10.660+05:30  INFO 22592 --- [delivery-service] [  restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-23T18:16:10.751+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-06-23T18:16:11.596+05:30  WARN 22592 --- [delivery-service] [  restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-23T18:16:12.384+05:30  INFO 22592 --- [delivery-service] [  restartedMain] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestClient.
+2026-06-23T18:16:12.437+05:30  WARN 22592 --- [delivery-service] [  restartedMain] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-06-23T18:16:12.445+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-06-23T18:16:12.570+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-06-23T18:16:12.604+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-06-23T18:16:12.609+05:30  INFO 22592 --- [delivery-service] [  restartedMain] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-23T18:16:12.620+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-23T18:16:12.620+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-23T18:16:12.620+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-23T18:16:12.620+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-23T18:16:12.620+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-23T18:16:12.621+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-06-23T18:16:12.621+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-23T18:16:13.017+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-23T18:16:13.019+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-06-23T18:16:13.022+05:30  INFO 22592 --- [delivery-service] [  restartedMain] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-06-23T18:16:13.024+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1782218773023 with initial instances count: 8
+2026-06-23T18:16:13.028+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application DELIVERY-SERVICE with eureka with status UP
+2026-06-23T18:16:13.029+05:30  INFO 22592 --- [delivery-service] [  restartedMain] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782218773029, current=UP, previous=STARTING]
+2026-06-23T18:16:13.029+05:30  WARN 22592 --- [delivery-service] [  restartedMain] c.n.discovery.InstanceInfoReplicator     : Ignoring onDemand update due to rate limiter
+2026-06-23T18:16:13.035+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_DELIVERY-SERVICE/delivery-service:05caafb5d6b70b5ae833af4e2186e564: registering service...
+2026-06-23T18:16:13.048+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8087 (http) with context path '/'
+2026-06-23T18:16:13.050+05:30  INFO 22592 --- [delivery-service] [  restartedMain] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8087
+2026-06-23T18:16:13.094+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_DELIVERY-SERVICE/delivery-service:05caafb5d6b70b5ae833af4e2186e564 - registration status: 204
+2026-06-23T18:16:13.097+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782218773097, current=DOWN, previous=UP]
+2026-06-23T18:16:13.097+05:30  WARN 22592 --- [delivery-service] [foReplicator-%d] c.n.discovery.InstanceInfoReplicator     : Ignoring onDemand update due to rate limiter
+2026-06-23T18:16:13.097+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_DELIVERY-SERVICE/delivery-service:05caafb5d6b70b5ae833af4e2186e564: registering service...
+2026-06-23T18:16:13.102+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_DELIVERY-SERVICE/delivery-service:05caafb5d6b70b5ae833af4e2186e564 - registration status: 204
+2026-06-23T18:16:13.124+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.a.kafka.common.config.AbstractConfig   : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.offset.reset = earliest
+	bootstrap.servers = [localhost:9092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-delivery-group-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	enable.metrics.push = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = delivery-group
+	group.instance.id = null
+	group.protocol = classic
+	group.remote.assignor = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metadata.recovery.rebootstrap.trigger.ms = 300000
+	metadata.recovery.strategy = rebootstrap
+	metric.reporters = [org.apache.kafka.common.metrics.JmxReporter]
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.max.ms = 1000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.assertion.algorithm = RS256
+	sasl.oauthbearer.assertion.claim.aud = null
+	sasl.oauthbearer.assertion.claim.exp.seconds = 300
+	sasl.oauthbearer.assertion.claim.iss = null
+	sasl.oauthbearer.assertion.claim.jti.include = false
+	sasl.oauthbearer.assertion.claim.nbf.seconds = 60
+	sasl.oauthbearer.assertion.claim.sub = null
+	sasl.oauthbearer.assertion.file = null
+	sasl.oauthbearer.assertion.private.key.file = null
+	sasl.oauthbearer.assertion.private.key.passphrase = null
+	sasl.oauthbearer.assertion.template.file = null
+	sasl.oauthbearer.client.credentials.client.id = null
+	sasl.oauthbearer.client.credentials.client.secret = null
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.header.urlencode = false
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.jwt.retriever.class = class org.apache.kafka.common.security.oauthbearer.DefaultJwtRetriever
+	sasl.oauthbearer.jwt.validator.class = class org.apache.kafka.common.security.oauthbearer.DefaultJwtValidator
+	sasl.oauthbearer.scope = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	share.acknowledgement.mode = implicit
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.JsonDeserializer
+
+2026-06-23T18:16:13.170+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.a.k.c.t.i.KafkaMetricsCollector        : initializing Kafka metrics collector
+2026-06-23T18:16:13.347+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka version: 4.1.2
+2026-06-23T18:16:13.347+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka commitId: c82fd9b934b4c1e6
+2026-06-23T18:16:13.347+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.a.kafka.common.utils.AppInfoParser     : Kafka startTimeMs: 1782218773346
+2026-06-23T18:16:13.358+05:30  INFO 22592 --- [delivery-service] [  restartedMain] o.a.k.c.c.i.ClassicKafkaConsumer         : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Subscribed to topic(s): payment-completed
+2026-06-23T18:16:13.380+05:30  INFO 22592 --- [delivery-service] [  restartedMain] c.o.d.DeliveryServiceApplication         : Started DeliveryServiceApplication in 7.584 seconds (process running for 8.349)
+2026-06-23T18:16:13.794+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] org.apache.kafka.clients.Metadata        : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Cluster ID: Ve50mlexTHa3pctF6-t9wQ
+2026-06-23T18:16:13.796+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Discovered group coordinator localhost:9092 (id: 2147482646 rack: null isFenced: false)
+2026-06-23T18:16:13.798+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] (Re-)joining group
+2026-06-23T18:16:13.818+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Request joining group due to: need to re-join with the given member-id: consumer-delivery-group-1-d204dd77-dd17-4189-9d0f-24ddafc48223
+2026-06-23T18:16:13.818+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] (Re-)joining group
+2026-06-23T18:16:16.823+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Successfully joined group with generation Generation{generationId=7, memberId='consumer-delivery-group-1-d204dd77-dd17-4189-9d0f-24ddafc48223', protocol='range'}
+2026-06-23T18:16:16.831+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Finished assignment for group at generation 7: {consumer-delivery-group-1-d204dd77-dd17-4189-9d0f-24ddafc48223=Assignment(partitions=[payment-completed-0])}
+2026-06-23T18:16:16.839+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Successfully synced group in generation Generation{generationId=7, memberId='consumer-delivery-group-1-d204dd77-dd17-4189-9d0f-24ddafc48223', protocol='range'}
+2026-06-23T18:16:16.840+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Notifying assignor about the new Assignment(partitions=[payment-completed-0])
+2026-06-23T18:16:16.842+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] k.c.c.i.ConsumerRebalanceListenerInvoker : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Adding newly assigned partitions: [payment-completed-0]
+2026-06-23T18:16:16.850+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.ConsumerCoordinator  : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Found no committed offset for partition payment-completed-0
+2026-06-23T18:16:16.870+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.a.k.c.c.internals.SubscriptionState    : [Consumer clientId=consumer-delivery-group-1, groupId=delivery-group] Resetting offset for partition payment-completed-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:9092 (id: 1001 rack: null isFenced: false)], epoch=0}}.
+2026-06-23T18:16:16.871+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] o.s.k.l.KafkaMessageListenerContainer    : delivery-group: partitions assigned: [payment-completed-0]
+2026-06-23T18:16:25.827+05:30  INFO 22592 --- [delivery-service] [nio-8087-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-23T18:16:25.828+05:30  INFO 22592 --- [delivery-service] [nio-8087-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-23T18:16:25.830+05:30  INFO 22592 --- [delivery-service] [nio-8087-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-06-23T18:16:43.106+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782218803106, current=UP, previous=DOWN]
+2026-06-23T18:16:43.106+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_DELIVERY-SERVICE/delivery-service:05caafb5d6b70b5ae833af4e2186e564: registering service...
+2026-06-23T18:16:43.111+05:30  INFO 22592 --- [delivery-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_DELIVERY-SERVICE/delivery-service:05caafb5d6b70b5ae833af4e2186e564 - registration status: 204
+2026-06-23T18:21:12.624+05:30  INFO 22592 --- [delivery-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-23T18:24:06.537+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.kafka.OrderKafkaConsumer           : Received payment-completed event for orderId: 63, status: SUCCESS
+2026-06-23T18:24:06.648+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Assigning partner for orderId=63 | darkStore='Hosa Road Dark Store' (12.8706, 77.6462) | customer=(12.869, 77.669)
+2026-06-23T18:24:06.665+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Selected partner 'Priya Sharma' (id=2) for orderId=63 | riderToDarkStore=2.30 km | darkStoreToCustomer=2.48 km | totalDistance=4.78 km | radius=5.0 km
+2026-06-23T18:24:06.665+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Assigned partner='Priya Sharma' (id=2) for orderId=63 | darkStore='Hosa Road Dark Store' (id=4) | totalDistanceKm=4.78
+2026-06-23T18:24:06.703+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Delivery created — orderId=63, partner='Priya Sharma', status=ASSIGNED, darkStore='Hosa Road Dark Store'
+2026-06-23T18:24:34.444+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.kafka.OrderKafkaConsumer           : Received payment-completed event for orderId: 64, status: SUCCESS
+2026-06-23T18:24:34.448+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Assigning partner for orderId=64 | darkStore='IIITB Gate Dark Store' (12.8452, 77.6632) | customer=(12.8452, 77.6632)
+2026-06-23T18:24:34.451+05:30  WARN 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] No partner within primary radius (5.0 km) for orderId=64. Trying fallback radius (10.0 km).
+2026-06-23T18:24:34.451+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Selected partner 'Rahul Singh' (id=3) for orderId=64 | riderToDarkStore=8.00 km | darkStoreToCustomer=0.00 km | totalDistance=8.00 km | radius=10.0 km
+2026-06-23T18:24:34.451+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Assigned partner='Rahul Singh' (id=3) for orderId=64 | darkStore='IIITB Gate Dark Store' (id=1) | totalDistanceKm=8.00
+2026-06-23T18:24:34.454+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Delivery created — orderId=64, partner='Rahul Singh', status=ASSIGNED, darkStore='IIITB Gate Dark Store'
+2026-06-23T18:26:12.625+05:30  INFO 22592 --- [delivery-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-23T18:26:14.069+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.kafka.OrderKafkaConsumer           : Received payment-completed event for orderId: 65, status: SUCCESS
+2026-06-23T18:26:14.073+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Assigning partner for orderId=65 | darkStore='IIITB Gate Dark Store' (12.8452, 77.6632) | customer=(12.8452, 77.6632)
+2026-06-23T18:26:14.080+05:30 ERROR 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.kafka.OrderKafkaConsumer           : Failed to process payment-completed event: No delivery partners available (none are AVAILABLE with location data)
+2026-06-23T18:30:16.256+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.kafka.OrderKafkaConsumer           : Received payment-completed event for orderId: 66, status: SUCCESS
+2026-06-23T18:30:16.260+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Assigning partner for orderId=66 | darkStore='IIITB Gate Dark Store' (12.8452, 77.6632) | customer=(12.8452, 77.6632)
+2026-06-23T18:30:16.264+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Selected partner 'Priya Sharma' (id=2) for orderId=66 | riderToDarkStore=1.28 km | darkStoreToCustomer=0.00 km | totalDistance=1.28 km | radius=5.0 km
+2026-06-23T18:30:16.264+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Assigned partner='Priya Sharma' (id=2) for orderId=66 | darkStore='IIITB Gate Dark Store' (id=1) | totalDistanceKm=1.28
+2026-06-23T18:30:16.267+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Delivery created — orderId=66, partner='Priya Sharma', status=ASSIGNED, darkStore='IIITB Gate Dark Store'
+2026-06-23T18:31:12.626+05:30  INFO 22592 --- [delivery-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-23T18:32:06.619+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.kafka.OrderKafkaConsumer           : Received payment-completed event for orderId: 67, status: SUCCESS
+2026-06-23T18:32:06.623+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Assigning partner for orderId=67 | darkStore='IIITB Gate Dark Store' (12.8452, 77.6632) | customer=(12.8452, 77.6632)
+2026-06-23T18:32:06.628+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] .o.d.s.PickupAwareNearestPartnerStrategy : [PickupAware] Selected partner 'Sana Khan' (id=4) for orderId=67 | riderToDarkStore=2.30 km | darkStoreToCustomer=0.00 km | totalDistance=2.30 km | radius=5.0 km
+2026-06-23T18:32:06.628+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Assigned partner='Sana Khan' (id=4) for orderId=67 | darkStore='IIITB Gate Dark Store' (id=1) | totalDistanceKm=2.30
+2026-06-23T18:32:06.632+05:30  INFO 22592 --- [delivery-service] [ntainer#0-0-C-1] c.o.d.service.DeliveryService            : [DeliveryService] Delivery created — orderId=67, partner='Sana Khan', status=ASSIGNED, darkStore='IIITB Gate Dark Store'

@@ -1,0 +1,733 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------------< com.ordereasy:cart-service >---------------------
+[INFO] Building cart-service 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.3.5:run (default-cli) > test-compile @ cart-service >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ cart-service ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] Copying 0 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ cart-service ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ cart-service ---
+[INFO] skip non existing resourceDirectory /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/src/test/resources
+[INFO] 
+[INFO] --- compiler:3.13.0:testCompile (default-testCompile) @ cart-service ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:3.3.5:run (default-cli) < test-compile @ cart-service <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.3.5:run (default-cli) @ cart-service ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-06-23T18:22:39.189+05:30  INFO 28178 --- [cart-service] [           main] c.o.cart_service.CartServiceApplication  : Starting CartServiceApplication using Java 21.0.10 with PID 28178 (/home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service/target/classes started by vivekjoshi in /home/vivekjoshi/Desktop/MTECH CSE 2025/SEMESTER-2/ORDER_EASY_PROJECT/backend/cart-service)
+2026-06-23T18:22:39.191+05:30  INFO 28178 --- [cart-service] [           main] c.o.cart_service.CartServiceApplication  : No active profile set, falling back to 1 default profile: "default"
+2026-06-23T18:22:40.238+05:30  INFO 28178 --- [cart-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-06-23T18:22:40.364+05:30  INFO 28178 --- [cart-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 120 ms. Found 2 JPA repository interfaces.
+2026-06-23T18:22:40.648+05:30  INFO 28178 --- [cart-service] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=5d74172f-dd5f-30e2-b6b6-7158906e07ab
+2026-06-23T18:22:40.961+05:30  WARN 28178 --- [cart-service] [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lbRestClientPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-06-23T18:22:40.965+05:30  WARN 28178 --- [cart-service] [           main] trationDelegate$BeanPostProcessorChecker : Bean 'deferringLoadBalancerInterceptor' of type [org.springframework.cloud.client.loadbalancer.DeferringLoadBalancerInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-06-23T18:22:41.273+05:30  INFO 28178 --- [cart-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8085 (http)
+2026-06-23T18:22:41.285+05:30  INFO 28178 --- [cart-service] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-06-23T18:22:41.285+05:30  INFO 28178 --- [cart-service] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2026-06-23T18:22:41.336+05:30  INFO 28178 --- [cart-service] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-06-23T18:22:41.337+05:30  INFO 28178 --- [cart-service] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2109 ms
+2026-06-23T18:22:41.748+05:30  INFO 28178 --- [cart-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-06-23T18:22:41.784+05:30  INFO 28178 --- [cart-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-06-23T18:22:41.806+05:30  INFO 28178 --- [cart-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-06-23T18:22:42.054+05:30  INFO 28178 --- [cart-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-06-23T18:22:42.076+05:30  INFO 28178 --- [cart-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-06-23T18:22:42.372+05:30  INFO 28178 --- [cart-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@29b0c169
+2026-06-23T18:22:42.374+05:30  INFO 28178 --- [cart-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-06-23T18:22:42.424+05:30  WARN 28178 --- [cart-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-06-23T18:22:43.144+05:30  INFO 28178 --- [cart-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-06-23T18:22:43.228+05:30  INFO 28178 --- [cart-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-06-23T18:22:43.915+05:30  WARN 28178 --- [cart-service] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-06-23T18:22:44.044+05:30  INFO 28178 --- [cart-service] [           main] o.s.c.openfeign.FeignClientFactoryBean   : For 'product-service' URL not provided. Will try picking an instance via load-balancing.
+2026-06-23T18:22:45.577+05:30  INFO 28178 --- [cart-service] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2026-06-23T18:22:45.635+05:30  WARN 28178 --- [cart-service] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-06-23T18:22:45.662+05:30  INFO 28178 --- [cart-service] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 2 endpoints beneath base path '/actuator'
+2026-06-23T18:22:45.735+05:30  INFO 28178 --- [cart-service] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-06-23T18:22:45.770+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-06-23T18:22:45.774+05:30  INFO 28178 --- [cart-service] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-23T18:22:45.782+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-06-23T18:22:45.782+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-06-23T18:22:45.783+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-06-23T18:22:45.783+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-06-23T18:22:45.783+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-06-23T18:22:45.783+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-06-23T18:22:45.783+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-06-23T18:22:46.082+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-06-23T18:22:46.084+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-06-23T18:22:46.086+05:30  INFO 28178 --- [cart-service] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-06-23T18:22:46.088+05:30  INFO 28178 --- [cart-service] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1782219166087 with initial instances count: 12
+2026-06-23T18:22:46.101+05:30  INFO 28178 --- [cart-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1782219166101, current=UP, previous=STARTING]
+2026-06-23T18:22:46.101+05:30  INFO 28178 --- [cart-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CART-SERVICE/cart-service:2c17e863228d4cc456ac777708aed624: registering service...
+2026-06-23T18:22:46.106+05:30  INFO 28178 --- [cart-service] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application CART-SERVICE with eureka with status UP
+2026-06-23T18:22:46.106+05:30  WARN 28178 --- [cart-service] [           main] c.n.discovery.InstanceInfoReplicator     : Ignoring onDemand update due to rate limiter
+2026-06-23T18:22:46.118+05:30  INFO 28178 --- [cart-service] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8085 (http) with context path '/'
+2026-06-23T18:22:46.119+05:30  INFO 28178 --- [cart-service] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8085
+2026-06-23T18:22:46.134+05:30  INFO 28178 --- [cart-service] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_CART-SERVICE/cart-service:2c17e863228d4cc456ac777708aed624 - registration status: 204
+2026-06-23T18:22:46.151+05:30  INFO 28178 --- [cart-service] [           main] c.o.cart_service.CartServiceApplication  : Started CartServiceApplication in 7.33 seconds (process running for 7.616)
+2026-06-23T18:22:59.786+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-06-23T18:22:59.786+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-06-23T18:22:59.788+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-06-23T18:23:42.030+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-4] c.o.c.controller.CartController          : Clearing entire cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:23:42.158+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-4] c.o.cart_service.service.CartService     : Cart cleared for userId: 82 (cartId: 1) — all items removed, cart row preserved
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+2026-06-23T18:23:42.190+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-4] c.o.c.controller.CartController          : Cart cleared for userId: 82
+2026-06-23T18:23:45.239+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-5] c.o.c.controller.CartController          : Adding item — userId: 82, productId: 1, quantity: 2
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        ci1_0.id,
+        ci1_0.cart_id,
+        ci1_0.created_at,
+        ci1_0.product_id,
+        ci1_0.quantity,
+        ci1_0.updated_at 
+    from
+        cart_items ci1_0 
+    where
+        ci1_0.cart_id=? 
+        and ci1_0.product_id=?
+Hibernate: 
+    insert 
+    into
+        cart_items
+        (cart_id, created_at, product_id, quantity, updated_at) 
+    values
+        (?, ?, ?, ?, ?)
+2026-06-23T18:23:45.424+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-5] c.o.cart_service.service.CartService     : Added new CartItem — cartId: 1, productId: 1, qty: 2
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:23:45.452+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-5] c.o.c.controller.CartController          : Item added to cart for userId: 82
+2026-06-23T18:23:48.713+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-6] c.o.c.controller.CartController          : Adding item — userId: 82, productId: 2, quantity: 3
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        ci1_0.id,
+        ci1_0.cart_id,
+        ci1_0.created_at,
+        ci1_0.product_id,
+        ci1_0.quantity,
+        ci1_0.updated_at 
+    from
+        cart_items ci1_0 
+    where
+        ci1_0.cart_id=? 
+        and ci1_0.product_id=?
+Hibernate: 
+    insert 
+    into
+        cart_items
+        (cart_id, created_at, product_id, quantity, updated_at) 
+    values
+        (?, ?, ?, ?, ?)
+2026-06-23T18:23:48.735+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-6] c.o.cart_service.service.CartService     : Added new CartItem — cartId: 1, productId: 2, qty: 3
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:23:48.765+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-6] c.o.c.controller.CartController          : Item added to cart for userId: 82
+2026-06-23T18:24:06.211+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-7] c.o.c.controller.CartController          : Clearing entire cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:24:06.220+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-7] c.o.cart_service.service.CartService     : Cart cleared for userId: 82 (cartId: 1) — all items removed, cart row preserved
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+2026-06-23T18:24:06.232+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-7] c.o.c.controller.CartController          : Cart cleared for userId: 82
+2026-06-23T18:24:27.077+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-8] c.o.c.controller.CartController          : Fetching cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:24:27.085+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-8] c.o.c.controller.CartController          : Cart fetched for userId: 82 — 0 items
+2026-06-23T18:24:29.984+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-9] c.o.c.controller.CartController          : Adding item — userId: 82, productId: 1, quantity: 2
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        ci1_0.id,
+        ci1_0.cart_id,
+        ci1_0.created_at,
+        ci1_0.product_id,
+        ci1_0.quantity,
+        ci1_0.updated_at 
+    from
+        cart_items ci1_0 
+    where
+        ci1_0.cart_id=? 
+        and ci1_0.product_id=?
+Hibernate: 
+    insert 
+    into
+        cart_items
+        (cart_id, created_at, product_id, quantity, updated_at) 
+    values
+        (?, ?, ?, ?, ?)
+2026-06-23T18:24:30.006+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-9] c.o.cart_service.service.CartService     : Added new CartItem — cartId: 1, productId: 1, qty: 2
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:24:30.028+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-9] c.o.c.controller.CartController          : Item added to cart for userId: 82
+2026-06-23T18:24:34.428+05:30  WARN 28178 --- [cart-service] [io-8085-exec-10] c.o.c.controller.CartController          : Clearing entire cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:24:34.434+05:30  WARN 28178 --- [cart-service] [io-8085-exec-10] c.o.cart_service.service.CartService     : Cart cleared for userId: 82 (cartId: 1) — all items removed, cart row preserved
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+2026-06-23T18:24:34.442+05:30  WARN 28178 --- [cart-service] [io-8085-exec-10] c.o.c.controller.CartController          : Cart cleared for userId: 82
+2026-06-23T18:26:10.339+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-3] c.o.c.controller.CartController          : Adding item — userId: 82, productId: 1, quantity: 2
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        ci1_0.id,
+        ci1_0.cart_id,
+        ci1_0.created_at,
+        ci1_0.product_id,
+        ci1_0.quantity,
+        ci1_0.updated_at 
+    from
+        cart_items ci1_0 
+    where
+        ci1_0.cart_id=? 
+        and ci1_0.product_id=?
+Hibernate: 
+    insert 
+    into
+        cart_items
+        (cart_id, created_at, product_id, quantity, updated_at) 
+    values
+        (?, ?, ?, ?, ?)
+2026-06-23T18:26:10.363+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-3] c.o.cart_service.service.CartService     : Added new CartItem — cartId: 1, productId: 1, qty: 2
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:26:10.384+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-3] c.o.c.controller.CartController          : Item added to cart for userId: 82
+2026-06-23T18:26:14.057+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-4] c.o.c.controller.CartController          : Clearing entire cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:26:14.063+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-4] c.o.cart_service.service.CartService     : Cart cleared for userId: 82 (cartId: 1) — all items removed, cart row preserved
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+2026-06-23T18:26:14.072+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-4] c.o.c.controller.CartController          : Cart cleared for userId: 82
+2026-06-23T18:27:45.785+05:30  INFO 28178 --- [cart-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-06-23T18:30:12.922+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-8] c.o.c.controller.CartController          : Adding item — userId: 82, productId: 1, quantity: 2
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        ci1_0.id,
+        ci1_0.cart_id,
+        ci1_0.created_at,
+        ci1_0.product_id,
+        ci1_0.quantity,
+        ci1_0.updated_at 
+    from
+        cart_items ci1_0 
+    where
+        ci1_0.cart_id=? 
+        and ci1_0.product_id=?
+Hibernate: 
+    insert 
+    into
+        cart_items
+        (cart_id, created_at, product_id, quantity, updated_at) 
+    values
+        (?, ?, ?, ?, ?)
+2026-06-23T18:30:12.942+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-8] c.o.cart_service.service.CartService     : Added new CartItem — cartId: 1, productId: 1, qty: 2
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:30:12.962+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-8] c.o.c.controller.CartController          : Item added to cart for userId: 82
+2026-06-23T18:30:16.248+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-9] c.o.c.controller.CartController          : Clearing entire cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:30:16.253+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-9] c.o.cart_service.service.CartService     : Cart cleared for userId: 82 (cartId: 1) — all items removed, cart row preserved
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+2026-06-23T18:30:16.262+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-9] c.o.c.controller.CartController          : Cart cleared for userId: 82
+2026-06-23T18:32:02.898+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-4] c.o.c.controller.CartController          : Adding item — userId: 82, productId: 1, quantity: 2
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        ci1_0.id,
+        ci1_0.cart_id,
+        ci1_0.created_at,
+        ci1_0.product_id,
+        ci1_0.quantity,
+        ci1_0.updated_at 
+    from
+        cart_items ci1_0 
+    where
+        ci1_0.cart_id=? 
+        and ci1_0.product_id=?
+Hibernate: 
+    insert 
+    into
+        cart_items
+        (cart_id, created_at, product_id, quantity, updated_at) 
+    values
+        (?, ?, ?, ?, ?)
+2026-06-23T18:32:02.918+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-4] c.o.cart_service.service.CartService     : Added new CartItem — cartId: 1, productId: 1, qty: 2
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:32:02.943+05:30  INFO 28178 --- [cart-service] [nio-8085-exec-4] c.o.c.controller.CartController          : Item added to cart for userId: 82
+2026-06-23T18:32:06.512+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-5] c.o.c.controller.CartController          : Clearing entire cart for userId: 82
+Hibernate: 
+    select
+        c1_0.id,
+        c1_0.created_at,
+        c1_0.updated_at,
+        c1_0.user_id 
+    from
+        carts c1_0 
+    where
+        c1_0.user_id=?
+Hibernate: 
+    select
+        i1_0.cart_id,
+        i1_0.id,
+        i1_0.created_at,
+        i1_0.product_id,
+        i1_0.quantity,
+        i1_0.updated_at 
+    from
+        cart_items i1_0 
+    where
+        i1_0.cart_id=?
+2026-06-23T18:32:06.518+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-5] c.o.cart_service.service.CartService     : Cart cleared for userId: 82 (cartId: 1) — all items removed, cart row preserved
+Hibernate: 
+    update
+        carts 
+    set
+        updated_at=?,
+        user_id=? 
+    where
+        id=?
+Hibernate: 
+    delete 
+    from
+        cart_items 
+    where
+        id=?
+2026-06-23T18:32:06.526+05:30  WARN 28178 --- [cart-service] [nio-8085-exec-5] c.o.c.controller.CartController          : Cart cleared for userId: 82
+2026-06-23T18:32:45.785+05:30  INFO 28178 --- [cart-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

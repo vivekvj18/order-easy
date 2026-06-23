@@ -16,6 +16,7 @@ import com.ordereasy.delivery_service.kafka.DeliveryKafkaProducer;
 import com.ordereasy.delivery_service.repository.DeliveryPartnerRepository;
 import com.ordereasy.delivery_service.repository.DeliveryRepository;
 import com.ordereasy.delivery_service.strategy.DeliveryAssignmentStrategy;
+import com.ordereasy.delivery_service.strategy.PickupAwareNearestPartnerStrategy;
 import com.ordereasy.delivery_service.util.HaversineUtil;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -31,15 +32,18 @@ public class DeliveryService {
     private final DeliveryPartnerRepository partnerRepository;
     private final DeliveryRepository deliveryRepository;
     private final DeliveryAssignmentStrategy assignmentStrategy;
+    private final PickupAwareNearestPartnerStrategy pickupAwareStrategy;
     private final DeliveryKafkaProducer deliveryKafkaProducer;
 
     public DeliveryService(DeliveryPartnerRepository partnerRepository,
                            DeliveryRepository deliveryRepository,
                            DeliveryAssignmentStrategy assignmentStrategy,
+                           PickupAwareNearestPartnerStrategy pickupAwareStrategy,
                            DeliveryKafkaProducer deliveryKafkaProducer) {
         this.partnerRepository = partnerRepository;
         this.deliveryRepository = deliveryRepository;
         this.assignmentStrategy = assignmentStrategy;
+        this.pickupAwareStrategy = pickupAwareStrategy;
         this.deliveryKafkaProducer = deliveryKafkaProducer;
     }
 
@@ -126,24 +130,107 @@ public class DeliveryService {
         partnerRepository.save(selectedPartner);
     }
 
+    /**
+     * Primary entry point for payment-triggered delivery assignment.
+     *
+     * <p>Uses {@link PickupAwareNearestPartnerStrategy} which scores riders by:
+     * <pre>
+     *   totalDistance = riderToDarkStore + darkStoreToCustomer
+     * </pre>
+     * Riders are searched within a configurable radius of the dark store (not the customer).
+     *
+     * <p>Fallback: if dark store coordinates are missing (malformed event), falls back to
+     * the legacy {@link #assignDelivery(OrderCreatedEvent)} method using customer coordinates only.
+     *
+     * @param paymentEvent the payment-completed Kafka event (must have status = "SUCCESS")
+     */
+    @Transactional
     public void assignDeliveryFromPayment(PaymentCompletedEvent paymentEvent) {
         if (!"SUCCESS".equals(paymentEvent.getStatus())) {
-            log.warn("Skipping delivery assignment — payment status is: {}", paymentEvent.getStatus());
+            log.warn("[DeliveryService] Skipping delivery assignment — payment status is: {}",
+                    paymentEvent.getStatus());
             return;
         }
 
-        // Map PaymentCompletedEvent to OrderCreatedEvent for strategy compatibility
-        OrderCreatedEvent orderEvent = new OrderCreatedEvent();
-        orderEvent.setOrderId(paymentEvent.getOrderId());
-        orderEvent.setUserId(paymentEvent.getUserId());
-        orderEvent.setUserEmail(paymentEvent.getUserEmail());
-        orderEvent.setTotalAmount(paymentEvent.getAmount());
-        orderEvent.setItems(paymentEvent.getItems());
-        orderEvent.setDeliveryLatitude(paymentEvent.getDeliveryLatitude());
-        orderEvent.setDeliveryLongitude(paymentEvent.getDeliveryLongitude());
-        // deliverySlot is not used by the assignment strategy — safely omitted
+        // Idempotency guard — skip if delivery already assigned for this order
+        if (deliveryRepository.findByOrderId(paymentEvent.getOrderId()).isPresent()) {
+            log.warn("[DeliveryService] Delivery already exists for orderId={}. Skipping duplicate assignment.",
+                    paymentEvent.getOrderId());
+            return;
+        }
 
-        assignDelivery(orderEvent);
+        // ── Validate dark store coordinates ───────────────────────────────────
+        boolean hasDarkStoreCoords = paymentEvent.getDarkStoreLatitude() != null
+                && paymentEvent.getDarkStoreLongitude() != null
+                && paymentEvent.getDarkStoreId() != null;
+
+        boolean hasCustomerCoords = paymentEvent.getDeliveryLatitude() != null
+                && paymentEvent.getDeliveryLongitude() != null;
+
+        if (!hasDarkStoreCoords || !hasCustomerCoords) {
+            log.warn("[DeliveryService] Dark store or customer coordinates missing for orderId={}. " +
+                            "darkStoreId={}, darkStoreLat={}, darkStoreLon={}, customerLat={}, customerLon={}. " +
+                            "Falling back to legacy nearest-partner assignment.",
+                    paymentEvent.getOrderId(),
+                    paymentEvent.getDarkStoreId(),
+                    paymentEvent.getDarkStoreLatitude(), paymentEvent.getDarkStoreLongitude(),
+                    paymentEvent.getDeliveryLatitude(), paymentEvent.getDeliveryLongitude());
+
+            // Legacy fallback: map to OrderCreatedEvent and use NearestPartnerStrategy
+            OrderCreatedEvent orderEvent = new OrderCreatedEvent();
+            orderEvent.setOrderId(paymentEvent.getOrderId());
+            orderEvent.setUserId(paymentEvent.getUserId());
+            orderEvent.setUserEmail(paymentEvent.getUserEmail());
+            orderEvent.setTotalAmount(paymentEvent.getAmount());
+            orderEvent.setItems(paymentEvent.getItems());
+            orderEvent.setDeliveryLatitude(paymentEvent.getDeliveryLatitude());
+            orderEvent.setDeliveryLongitude(paymentEvent.getDeliveryLongitude());
+            assignDelivery(orderEvent);
+            return;
+        }
+
+        // ── Pickup-aware assignment ────────────────────────────────────────────
+        DeliveryPartner selectedPartner = pickupAwareStrategy.assign(paymentEvent);
+
+        // Calculate total distance for the delivery record
+        Double totalDistanceKm = pickupAwareStrategy.calculateTotalDistance(
+                selectedPartner,
+                paymentEvent.getDarkStoreLatitude(), paymentEvent.getDarkStoreLongitude(),
+                paymentEvent.getDeliveryLatitude(), paymentEvent.getDeliveryLongitude()
+        );
+
+        log.info("[DeliveryService] Assigned partner='{}' (id={}) for orderId={} | " +
+                        "darkStore='{}' (id={}) | totalDistanceKm={}",
+                selectedPartner.getName(), selectedPartner.getId(),
+                paymentEvent.getOrderId(),
+                paymentEvent.getDarkStoreName(), paymentEvent.getDarkStoreId(),
+                totalDistanceKm != null ? String.format("%.2f", totalDistanceKm) : "N/A");
+
+        // ── Persist delivery row with dark store traceability ─────────────────
+        Delivery delivery = Delivery.builder()
+                .orderId(paymentEvent.getOrderId())
+                .partner(selectedPartner)
+                .status(DeliveryStatus.ASSIGNED)
+                .assignedAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .deliveryLatitude(paymentEvent.getDeliveryLatitude())
+                .deliveryLongitude(paymentEvent.getDeliveryLongitude())
+                .assignmentDistanceKm(totalDistanceKm)
+                // Dark store traceability fields
+                .darkStoreId(paymentEvent.getDarkStoreId())
+                .darkStoreName(paymentEvent.getDarkStoreName())
+                .pickupLatitude(paymentEvent.getDarkStoreLatitude())
+                .pickupLongitude(paymentEvent.getDarkStoreLongitude())
+                .build();
+
+        deliveryRepository.save(delivery);
+
+        // ── Mark partner as BUSY ──────────────────────────────────────────────
+        selectedPartner.setStatus(PartnerStatus.BUSY);
+        partnerRepository.save(selectedPartner);
+
+        log.info("[DeliveryService] Delivery created — orderId={}, partner='{}', status=ASSIGNED, darkStore='{}'",
+                paymentEvent.getOrderId(), selectedPartner.getName(), paymentEvent.getDarkStoreName());
     }
 
     public List<DeliveryResponse> getDeliveriesByPartnerId(Long partnerId) {
@@ -174,6 +261,10 @@ public class DeliveryService {
                 .partnerLongitude(partner.getLongitude())
                 .deliveryLatitude(delivery.getDeliveryLatitude())
                 .deliveryLongitude(delivery.getDeliveryLongitude())
+                .pickupLatitude(delivery.getPickupLatitude())
+                .pickupLongitude(delivery.getPickupLongitude())
+                .darkStoreId(delivery.getDarkStoreId())
+                .darkStoreName(delivery.getDarkStoreName())
                 .assignmentDistanceKm(delivery.getAssignmentDistanceKm())
                 .status(delivery.getStatus())
                 .assignedAt(delivery.getAssignedAt())
